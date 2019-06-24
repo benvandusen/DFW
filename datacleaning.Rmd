@@ -1,0 +1,23 @@
+---
+title: "Data prep"
+author: "BVD"
+date: "6/23/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load data
+```{r}
+load("~/DFW6.23.19.RData")
+DFW<-DFW_6_23_19_red
+```
+
+ID LA courses
+```{r}
+DFW<-DFW_6_23_19_red
+DFW$LA<-0
+ifelse(DFW$Subject=="SCED", DFW$LA<-1, DFW$LA<-0)
+```
