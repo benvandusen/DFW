@@ -17,7 +17,8 @@ DFW<-DFW_6_23_19_red
 
 ID LA courses
 ```{r}
-DFW<-DFW_6_23_19_red
 DFW$LA<-0
-ifelse(DFW$Subject=="SCED", DFW$LA<-1, DFW$LA<-0)
+ifelse(DFW$INSTRUCTOR1_NAME=="Brookes,David T", 
+       ifelse(DFW$INSTRUCTOR1_NAME=="Brookes,David T", 
+       DFW$LA<-0, DFW$LA<-0))
 ```
