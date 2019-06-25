@@ -18,7 +18,18 @@ DFW<-DFW_6_23_19_red
 ID LA courses
 ```{r}
 DFW$LA<-0
-ifelse(DFW$INSTRUCTOR1_NAME=="Brookes,David T", 
-       ifelse(DFW$INSTRUCTOR1_NAME=="Brookes,David T", 
-       DFW$LA<-0, DFW$LA<-0))
+
+DFW$LA[DFW$INSTRUCTOR1_NAME=="Brookes,David T" & DFW$Number=="202A" & 
+                 DFW$TERM=="2172" | DFW$TERM=="2178" | DFW$TERM=="2182" | DFW$TERM=="2188" | DFW$TERM=="2192"] <- 1
+
+DFW$LA[DFW$INSTRUCTOR1_NAME=="Brookes,David T" & DFW$Number=="202B" & 
+                 DFW$TERM=="2168"] <- 1
+
+DFW$LA[DFW$INSTRUCTOR1_NAME=="Arpin,Paul C" & DFW$Number=="204B" & 
+                 DFW$TERM=="2172" | DFW$TERM=="2178" | DFW$TERM=="2192"] <- 1
+
+DFW$LA[DFW$INSTRUCTOR1_NAME=="Arpin,Paul C" & DFW$Number=="204A" & 
+                 DFW$TERM=="2188"] <- 1
+
+
 ```
