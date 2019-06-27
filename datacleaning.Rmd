@@ -18,8 +18,6 @@ DFW<-DFW_6_23_19_red
 ID LA courses
 ```{r}
 DFW$LA<-0
-
-#Brookes
 DFW$LA[
   DFW$INSTRUCTOR1_NAME=="Brookes,David T" & DFW$Number=="202A" & DFW$TERM=="2172" | 
          DFW$INSTRUCTOR1_NAME=="Brookes,David T" & DFW$Number=="202A" & DFW$TERM=="2178" | 
@@ -30,14 +28,57 @@ DFW$LA[
          DFW$INSTRUCTOR1_NAME=="Arpin,Paul C" & DFW$Number=="204B" & DFW$TERM=="2172" | 
          DFW$INSTRUCTOR1_NAME=="Arpin,Paul C" & DFW$Number=="204B" & DFW$TERM=="2178" | 
          DFW$INSTRUCTOR1_NAME=="Arpin,Paul C" & DFW$Number=="204B" & DFW$TERM=="2192" |
-         DFW$INSTRUCTOR1_NAME=="Arpin,Paul C" & DFW$Number=="204A" & DFW$TERM=="2188"
-         
+    DFW$INSTRUCTOR1_NAME=="Arpin,Paul C" & DFW$Number=="204A" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Arpin,Paul C" & DFW$Number=="202B" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Ayars,Eric J" & DFW$Number=="204A" & DFW$TERM=="2172" |
+    DFW$INSTRUCTOR1_NAME=="Ayars,Eric J" & DFW$Number=="204A" & DFW$TERM=="2178" |
+    DFW$INSTRUCTOR1_NAME=="Ayars,Eric J" & DFW$Number=="204A" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Bailey,Paul L" & DFW$Number=="118" & DFW$TERM=="2178" |
+    DFW$INSTRUCTOR1_NAME=="Bailey,Paul L" & DFW$Number=="118" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Bailey,Paul L" & DFW$Number=="119" & DFW$TERM=="2168" |
+    DFW$INSTRUCTOR1_NAME=="Bailey,Paul L" & DFW$Number=="119" & DFW$TERM=="2172" |
+    DFW$INSTRUCTOR1_NAME=="Bailey,Paul L" & DFW$Number=="119" & DFW$TERM=="2178" |
+    DFW$INSTRUCTOR1_NAME=="Bailey,Paul L" & DFW$Number=="119" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Bailey,Paul L" & DFW$Number=="119" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Bailey,Paul L" & DFW$Number=="120" & DFW$TERM=="2192" |
+    DFW$INSTRUCTOR1_NAME=="Danner,Richard S" & DFW$Number=="118" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Danner,Richard S" & DFW$Number=="120" & DFW$TERM=="2172" |
+    DFW$INSTRUCTOR1_NAME=="Danner,Richard S" & DFW$Number=="118" & DFW$TERM=="2192" |
+    DFW$INSTRUCTOR1_NAME=="Herrera,Christine A" & DFW$Number=="120" & DFW$TERM=="2172" |
+    DFW$INSTRUCTOR1_NAME=="Herrera,Christine A" & DFW$Number=="120" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Herrera,Christine A" & DFW$Number=="120" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Herrera,Christine A" & DFW$Number=="120" & DFW$TERM=="2192" |
+    DFW$INSTRUCTOR1_NAME=="Lin,Yuhfen" & DFW$Number=="202A" & DFW$TERM=="2168" |
+    DFW$INSTRUCTOR1_NAME=="Lin,Yuhfen" & DFW$Number=="202A" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Lin,Yuhfen" & DFW$Number=="202A" & DFW$TERM=="2192" |
+    DFW$INSTRUCTOR1_NAME=="Lin,Yuhfen" & DFW$Number=="202B" & DFW$TERM=="2172" |
+    DFW$INSTRUCTOR1_NAME=="Lin,Yuhfen" & DFW$Number=="202B" & DFW$TERM=="2178" |
+    DFW$INSTRUCTOR1_NAME=="Lin,Yuhfen" & DFW$Number=="202B" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Lin,Yuhfen" & DFW$Number=="204B" & DFW$TERM=="2178" |
+    DFW$INSTRUCTOR1_NAME=="Newton,Mark H" & DFW$Number=="343" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Newton,Mark H" & DFW$Number=="343" & DFW$TERM=="2192" |
+    DFW$INSTRUCTOR1_NAME=="Pechkis,Hyewon K" & DFW$Number=="204B" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Pechkis,Hyewon K" & DFW$Number=="204B" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Pechkis,Hyewon K" & DFW$Number=="204B" & DFW$TERM=="2192" |
+    DFW$INSTRUCTOR1_NAME=="Petrova-Mayor,Anna I" & DFW$Number=="204A" & DFW$TERM=="2178" |
+    DFW$INSTRUCTOR1_NAME=="Petrova-Mayor,Anna I" & DFW$Number=="204C" & DFW$TERM=="2172" |
+    DFW$INSTRUCTOR1_NAME=="Petrova-Mayor,Anna I" & DFW$Number=="204C" & DFW$TERM=="2178" |
+    DFW$INSTRUCTOR1_NAME=="Petrova-Mayor,Anna I" & DFW$Number=="204C" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Strand,Krista L" & DFW$Number=="110" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Strand,Krista L" & DFW$Number=="110" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Tran,Cawa" & DFW$Number=="153" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Tran,Cawa" & DFW$Number=="153" & DFW$TERM=="2192" |
+    DFW$INSTRUCTOR1_NAME=="Van Dusen,Benjamin C" & DFW$Number=="141" & DFW$TERM=="2168" |
+    DFW$INSTRUCTOR1_NAME=="Van Dusen,Benjamin C" & DFW$Number=="141" & DFW$TERM=="2172" |
+    DFW$INSTRUCTOR1_NAME=="Van Dusen,Benjamin C" & DFW$Number=="141" & DFW$TERM=="2178" |
+    DFW$INSTRUCTOR1_NAME=="Van Dusen,Benjamin C" & DFW$Number=="141" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Van Dusen,Benjamin C" & DFW$Number=="141" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Van Dusen,Benjamin C" & DFW$Number=="141" & DFW$TERM=="2192" |
+    DFW$INSTRUCTOR1_NAME=="Van Dusen,Benjamin C" & DFW$Number=="321" & DFW$TERM=="2178" |
+    DFW$INSTRUCTOR1_NAME=="Van Dusen,Benjamin C" & DFW$Number=="350" & DFW$TERM=="2182" |
+    DFW$INSTRUCTOR1_NAME=="Zou,Xueli" & DFW$Number=="204A" & DFW$TERM=="2188" |
+    DFW$INSTRUCTOR1_NAME=="Zou,Xueli" & DFW$Number=="204A" & DFW$TERM=="2192" |
+    DFW$INSTRUCTOR1_NAME=="Pechkis,Joseph A" & DFW$Number=="202B" & DFW$TERM=="2192"
          ] <- 1
-
-
-
-DFW$LA[DFW$INSTRUCTOR1_NAME=="Arpin,Paul C" & DFW$Number=="204A" & 
-                 DFW$TERM=="2188"] <- 1
-
 
 ```
