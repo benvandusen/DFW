@@ -82,3 +82,26 @@ DFW$LA[
          ] <- 1
 
 ```
+
+variables I care about
+```{r}
+DFW$DFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="D",0,1))))
+DFW$DDFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,1)))
+names(DFW)[names(DFW)=="INSTRUCTOR1_NAME"] <- "instructor"
+names(DFW)[names(DFW)=="FirstGeneration"] <- "firstgen"
+```
+
+creating dummy variables
+```{r}
+
+DFW$firstgend <- ifelse(DFW$firstgen=="First Generation Student",1,0)
+DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
+DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
+DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
+DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
+DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
+DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
+DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
+DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
+```
+
