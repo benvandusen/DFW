@@ -13,6 +13,8 @@ Load data
 ```{r}
 load("~/DFW6.23.19.RData")
 DFW<-DFW_6_23_19_red
+
+library("hglm")
 ```
 
 ID LA courses
@@ -89,19 +91,74 @@ DFW$DFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$
 DFW$DDFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,1)))
 names(DFW)[names(DFW)=="INSTRUCTOR1_NAME"] <- "instructor"
 names(DFW)[names(DFW)=="FirstGeneration"] <- "firstgen"
+names(DFW)[names(DFW)=="COURSE_ID"] <- "course"
 ```
 
 creating dummy variables
 ```{r}
 
 DFW$firstgend <- ifelse(DFW$firstgen=="First Generation Student",1,0)
-DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
-DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
-DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
-DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
-DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
-DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
-DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
-DFW$Hispanic <- ifelse(DFW$Ethnicity=="Hispanic/Latino",1,0)
+
+DFW$white <- ifelse(DFW$Ethnicity=="White",1,0)
+DFW$black <- ifelse(DFW$Ethnicity=="Black/African American",1,0)
+DFW$unknown <- ifelse(DFW$Ethnicity=="Unknown",1,ifelse(DFW$Ethnicity=="NULL",1,0))
+DFW$asian <- ifelse(DFW$Ethnicity=="Asian",1,0)
+DFW$mult_race <- ifelse(DFW$Ethnicity=="Two or More Races",1,0)
+DFW$nonres <- ifelse(DFW$Ethnicity=="Non-Resident Alien",1,0)
+DFW$pac_isl <- ifelse(DFW$Ethnicity=="Pacific Islander",1,0)
+DFW$indian <- ifelse(DFW$Ethnicity=="American Indian/Alaskan Native",1,0)
+
+
 ```
 
+subset data
+```{r}
+DFW_phys <- DFW[DFW$Subject=="PHYS",]
+DFW_math <- DFW[DFW$Subject=="MATH",]
+DFW_math_phys <- DFW[DFW$Subject=="PHYS" | DFW$Subject=="MATH",]
+```
+
+Models
+```{r}
+m1 <- (DFW ~ 1)
+m2 <- (DFW ~ white)
+m3 <- (DFW ~ white + firstgend)
+m4 <- (DFW ~ white + firstgend + LA)
+m5 <- (DFW ~ white*LA + firstgend*LA)
+```
+
+running models - physics
+```{r}
+p1 <- hglm(fixed = m1, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
+p2 <- hglm(fixed = m2, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
+p3 <- hglm(fixed = m3, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
+p4 <- hglm(fixed = m4, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
+p5 <- hglm(fixed = m5, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
+```
+
+Model outputs - physics
+```{r}
+summary(p1)
+summary(p2)
+summary(p3)
+summary(p4)
+summary(p5)
+```
+
+running models - math & physics
+```{r}
+mp1 <- hglm(fixed = m1, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
+mp2 <- hglm(fixed = m2, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
+mp3 <- hglm(fixed = m3, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
+mp4 <- hglm(fixed = m4, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
+mp5 <- hglm(fixed = m5, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
+```
+
+Model outputs - physics
+```{r}
+summary(mp1)
+summary(mp2)
+summary(mp3)
+summary(mp4)
+summary(mp5)
+```
