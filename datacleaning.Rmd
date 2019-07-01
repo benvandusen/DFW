@@ -10,9 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 Load data
-```{r}
-load("~/DFW6.23.19.RData")
-DFW<-DFW_6_23_19_red
+```{r message=FALSE}
+load("~/DFW7_1_19.RData")
+DFW<-DFW7_1_19
 
 library("hglm")
 ```
@@ -87,6 +87,7 @@ DFW$LA[
 
 variables I care about
 ```{r}
+DFW <- DFW[!is.na(DFW$Grade_Group),]
 DFW$DFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="D",0,1))))
 DFW$DDFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,1)))
 names(DFW)[names(DFW)=="INSTRUCTOR1_NAME"] <- "instructor"
@@ -108,6 +109,7 @@ DFW$nonres <- ifelse(DFW$Ethnicity=="Non-Resident Alien",1,0)
 DFW$pac_isl <- ifelse(DFW$Ethnicity=="Pacific Islander",1,0)
 DFW$indian <- ifelse(DFW$Ethnicity=="American Indian/Alaskan Native",1,0)
 
+DFW$Female <- ifelse(DFW$GenderLabel=="Male",0,1)
 
 ```
 
@@ -123,8 +125,9 @@ Models
 m1 <- (DFW ~ 1)
 m2 <- (DFW ~ white)
 m3 <- (DFW ~ white + firstgend)
-m4 <- (DFW ~ white + firstgend + LA)
-m5 <- (DFW ~ white*LA + firstgend*LA)
+m4 <- (DFW ~ white + firstgend + Female)
+m5 <- (DFW ~ white + firstgend + Female + LA)
+m6 <- (DFW ~ white*LA + firstgend*LA +Female*LA)
 ```
 
 running models - physics
@@ -134,6 +137,7 @@ p2 <- hglm(fixed = m2, random = ~ 1|course, data=DFW_phys, family = binomial(lin
 p3 <- hglm(fixed = m3, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
 p4 <- hglm(fixed = m4, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
 p5 <- hglm(fixed = m5, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
+p6 <- hglm(fixed = m6, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
 ```
 
 Model outputs - physics
@@ -143,6 +147,7 @@ summary(p2)
 summary(p3)
 summary(p4)
 summary(p5)
+summary(p6)
 ```
 
 running models - math & physics
@@ -152,6 +157,7 @@ mp2 <- hglm(fixed = m2, random = ~ 1|course, data=DFW_math_phys, family = binomi
 mp3 <- hglm(fixed = m3, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
 mp4 <- hglm(fixed = m4, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
 mp5 <- hglm(fixed = m5, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
+mp6 <- hglm(fixed = m6, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
 ```
 
 Model outputs - physics
@@ -161,4 +167,5 @@ summary(mp2)
 summary(mp3)
 summary(mp4)
 summary(mp5)
+summary(mp6)
 ```
