@@ -15,6 +15,7 @@ load("~/DFW7_1_19.RData")
 DFW<-DFW7_1_19
 
 library("hglm")
+library("cAIC4")
 ```
 
 ID LA courses
@@ -93,6 +94,7 @@ DFW$DDFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW
 names(DFW)[names(DFW)=="INSTRUCTOR1_NAME"] <- "instructor"
 names(DFW)[names(DFW)=="FirstGeneration"] <- "firstgen"
 names(DFW)[names(DFW)=="COURSE_ID"] <- "course"
+DFW$courseID <- paste(DFW$Subject,DFW$COURSE_ID,DFW$Section,DFW$TERM, sep='')
 ```
 
 creating dummy variables
@@ -132,12 +134,12 @@ m6 <- (DFW ~ white*LA + firstgend*LA +Female*LA)
 
 running models - physics
 ```{r}
-p1 <- hglm(fixed = m1, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
-p2 <- hglm(fixed = m2, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
-p3 <- hglm(fixed = m3, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
-p4 <- hglm(fixed = m4, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
-p5 <- hglm(fixed = m5, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
-p6 <- hglm(fixed = m6, random = ~ 1|course, data=DFW_phys, family = binomial(link = logit))
+p1 <- hglm(fixed = m1, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p2 <- hglm(fixed = m2, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p3 <- hglm(fixed = m3, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p4 <- hglm(fixed = m4, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p5 <- hglm(fixed = m5, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p6 <- hglm(fixed = m6, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
 ```
 
 Model outputs - physics
@@ -150,14 +152,19 @@ summary(p5)
 summary(p6)
 ```
 
+cAIC - physics
+```{r}
+cAIC(p1)
+```
+
 running models - math & physics
 ```{r}
-mp1 <- hglm(fixed = m1, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
-mp2 <- hglm(fixed = m2, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
-mp3 <- hglm(fixed = m3, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
-mp4 <- hglm(fixed = m4, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
-mp5 <- hglm(fixed = m5, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
-mp6 <- hglm(fixed = m6, random = ~ 1|course, data=DFW_math_phys, family = binomial(link = logit))
+mp1 <- hglm(fixed = m1, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
+mp2 <- hglm(fixed = m2, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
+mp3 <- hglm(fixed = m3, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
+mp4 <- hglm(fixed = m4, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
+mp5 <- hglm(fixed = m5, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
+mp6 <- hglm(fixed = m6, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
 ```
 
 Model outputs - physics
