@@ -125,31 +125,73 @@ DFW_math_phys <- DFW[DFW$Subject=="PHYS" | DFW$Subject=="MATH",]
 Models
 ```{r}
 m1 <- (DFW ~ 1)
+m1.5 <- (DFW ~ LA)
 m2 <- (DFW ~ white)
 m3 <- (DFW ~ white + firstgend)
 m4 <- (DFW ~ white + firstgend + Female)
 m5 <- (DFW ~ white + firstgend + Female + LA)
 m6 <- (DFW ~ white*LA + firstgend*LA +Female*LA)
+
+m1d <- (DDFW ~ 1)
+m1.5d <- (DDFW ~ LA)
+m2d <- (DDFW ~ white)
+m3d <- (DDFW ~ white + firstgend)
+m4d <- (DDFW ~ white + firstgend + Female)
+m5d <- (DDFW ~ white + firstgend + Female + LA)
+m6d <- (DDFW ~ white*LA + firstgend*LA +Female*LA)
 ```
 
 running models - physics
 ```{r}
 p1 <- hglm(fixed = m1, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p1.5 <- hglm(fixed = m1.5, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
 p2 <- hglm(fixed = m2, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
 p3 <- hglm(fixed = m3, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
 p4 <- hglm(fixed = m4, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
 p5 <- hglm(fixed = m5, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
 p6 <- hglm(fixed = m6, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+
+p1d <- hglm(fixed = m1d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p1.5d <- hglm(fixed = m1.5d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p2d <- hglm(fixed = m2d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p3d <- hglm(fixed = m3d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p4d <- hglm(fixed = m4d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p5d <- hglm(fixed = m5d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p6d <- hglm(fixed = m6d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
 ```
+
 
 Model outputs - physics
 ```{r}
 summary(p1)
+summary(p1.5)
 summary(p2)
 summary(p3)
 summary(p4)
 summary(p5)
 summary(p6)
+
+summary(p1d)
+summary(p1.5d)
+summary(p2d)
+summary(p3d)
+summary(p4d)
+summary(p5d)
+summary(p6d)
+
+```
+
+Probabilities - physics (https://sebastiansauer.github.io/convert_logit2prob/)
+```{r}
+logit2prob <- function(logit){
+  odds <- exp(logit)
+  prob <- odds / (1 + odds)
+  return(prob)
+}
+
+logit2prob(-0.8974)
+logit2prob(-1.5)
+mean(DFW_phys$DDFW)
 ```
 
 cAIC - physics
