@@ -89,18 +89,18 @@ DFW$LA[
 variables I care about
 ```{r}
 DFW <- DFW[!is.na(DFW$Grade_Group),]
-DFW$DFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="D",0,1))))
-DFW$DDFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,1)))
+DFW$DFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="D",0,ifelse(DFW$Grade_Group=="CR",0,1)))))
+DFW$DDFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="CR",0,1))))
 names(DFW)[names(DFW)=="INSTRUCTOR1_NAME"] <- "instructor"
 names(DFW)[names(DFW)=="FirstGeneration"] <- "firstgen"
 names(DFW)[names(DFW)=="COURSE_ID"] <- "course"
-DFW$courseID <- paste(DFW$Subject,DFW$COURSE_ID,DFW$Section,DFW$TERM, sep='')
+DFW$courID <- paste(DFW$Subject,DFW$course,DFW$Section,DFW$TERM, sep='')
 ```
 
 creating dummy variables
 ```{r}
 
-DFW$firstgend <- ifelse(DFW$firstgen=="First Generation Student",1,0)
+DFW$firstgen <- ifelse(DFW$firstgen=="First Generation Student",1,0)
 
 DFW$white <- ifelse(DFW$Ethnicity=="White",1,0)
 DFW$black <- ifelse(DFW$Ethnicity=="Black/African American",1,0)
@@ -120,6 +120,11 @@ subset data
 DFW_phys <- DFW[DFW$Subject=="PHYS",]
 DFW_math <- DFW[DFW$Subject=="MATH",]
 DFW_math_phys <- DFW[DFW$Subject=="PHYS" | DFW$Subject=="MATH",]
+DFW_202A <- DFW[DFW$Number=="202A",]
+DFW_202B <- DFW[DFW$Number=="202B",]
+DFW_204A <- DFW[DFW$Number=="204A",]
+DFW_204B <- DFW[DFW$Number=="204B",]
+DFW_204C <- DFW[DFW$Number=="204C",]
 ```
 
 Models
@@ -127,49 +132,61 @@ Models
 m1 <- (DFW ~ 1)
 m1.5 <- (DFW ~ LA)
 m2 <- (DFW ~ white)
-m3 <- (DFW ~ white + firstgend)
-m4 <- (DFW ~ white + firstgend + Female)
-m5 <- (DFW ~ white + firstgend + Female + LA)
-m6 <- (DFW ~ white*LA + firstgend*LA +Female*LA)
+m3 <- (DFW ~ white + firstgen)
+m4 <- (DFW ~ white + firstgen + Female)
+m5 <- (DFW ~ white + firstgen + Female + LA)
+m6 <- (DFW ~ white*LA + firstgen*LA +Female*LA)
 
 m1d <- (DDFW ~ 1)
 m1.5d <- (DDFW ~ LA)
 m2d <- (DDFW ~ white)
-m3d <- (DDFW ~ white + firstgend)
-m4d <- (DDFW ~ white + firstgend + Female)
-m5d <- (DDFW ~ white + firstgend + Female + LA)
-m6d <- (DDFW ~ white*LA + firstgend*LA +Female*LA)
+m3d <- (DDFW ~ white + firstgen)
+m4d <- (DDFW ~ white + firstgen + Female)
+m5d <- (DDFW ~ white + firstgen + Female + LA)
+m6d <- (DDFW ~ white*LA + firstgen*LA +Female*LA)
 ```
 
 running models - physics
 ```{r}
-p1 <- hglm(fixed = m1, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p1.5 <- hglm(fixed = m1.5, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p2 <- hglm(fixed = m2, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p3 <- hglm(fixed = m3, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p4 <- hglm(fixed = m4, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p5 <- hglm(fixed = m5, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p6 <- hglm(fixed = m6, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+#p1 <- hglm(fixed = m1, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+#p1.5 <- hglm(fixed = m1.5, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+#p2 <- hglm(fixed = m2, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+#p3 <- hglm(fixed = m3, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+#p4 <- hglm(fixed = m4, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+#p5 <- hglm(fixed = m5, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+#p6 <- hglm(fixed = m6, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
 
-p1d <- hglm(fixed = m1d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p1.5d <- hglm(fixed = m1.5d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p2d <- hglm(fixed = m2d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p3d <- hglm(fixed = m3d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p4d <- hglm(fixed = m4d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p5d <- hglm(fixed = m5d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p6d <- hglm(fixed = m6d, random = ~ 1|courseID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p1d <- hglm(fixed = m1d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p1.5d <- hglm(fixed = m1.5d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p2d <- hglm(fixed = m2d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p3d <- hglm(fixed = m3d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p4d <- hglm(fixed = m4d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p5d <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+p6d <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
+
+p5d202A <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_202A, family = binomial(link = logit), calc.like=TRUE)
+p5d202B <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_202B, family = binomial(link = logit), calc.like=TRUE)
+p5d204A <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_204A, family = binomial(link = logit), calc.like=TRUE)
+p5d204B <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_204B, family = binomial(link = logit), calc.like=TRUE)
+p5d204C <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_204C, family = binomial(link = logit), calc.like=TRUE)
+
+p6d202A <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_202A, family = binomial(link = logit), calc.like=TRUE)
+p6d202B <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_202B, family = binomial(link = logit), calc.like=TRUE)
+p6d204A <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_204A, family = binomial(link = logit), calc.like=TRUE)
+p6d204B <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_204B, family = binomial(link = logit), calc.like=TRUE)
+p6d204C <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_204C, family = binomial(link = logit), calc.like=TRUE)
 ```
 
 
 Model outputs - physics
 ```{r}
-summary(p1)
-summary(p1.5)
-summary(p2)
-summary(p3)
-summary(p4)
-summary(p5)
-summary(p6)
+#summary(p1)
+#summary(p1.5)
+#summary(p2)
+#summary(p3)
+#summary(p4)
+#summary(p5)
+#summary(p6)
 
 summary(p1d)
 summary(p1.5d)
@@ -179,6 +196,17 @@ summary(p4d)
 summary(p5d)
 summary(p6d)
 
+summary(p5d202A)
+summary(p5d202B)
+summary(p5d204A)
+summary(p5d204B)
+summary(p5d204C)
+
+summary(p6d202A)
+summary(p6d202B)
+summary(p6d204A)
+summary(p6d204B)
+summary(p6d204C)
 ```
 
 Probabilities - physics (https://sebastiansauer.github.io/convert_logit2prob/)
@@ -189,9 +217,9 @@ logit2prob <- function(logit){
   return(prob)
 }
 
-logit2prob(-0.8974)
 logit2prob(-1.5)
-mean(DFW_phys$DDFW)
+logit2prob(-1.5)
+mean(DFW_phys$DFW)
 ```
 
 cAIC - physics
