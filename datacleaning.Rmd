@@ -14,8 +14,9 @@ Load data
 load("~/DFW7_1_19.RData")
 DFW<-DFW7_1_19
 
-library("hglm")
 library("cAIC4")
+library("MuMIn")
+library("lme4")
 ```
 
 ID LA courses
@@ -103,6 +104,7 @@ creating dummy variables
 DFW$firstgen <- ifelse(DFW$firstgen=="First Generation Student",1,0)
 
 DFW$white <- ifelse(DFW$Ethnicity=="White",1,0)
+DFW$nonwhite <- ifelse(DFW$Ethnicity=="White",0,1)
 DFW$black <- ifelse(DFW$Ethnicity=="Black/African American",1,0)
 DFW$unknown <- ifelse(DFW$Ethnicity=="Unknown",1,ifelse(DFW$Ethnicity=="NULL",1,0))
 DFW$asian <- ifelse(DFW$Ethnicity=="Asian",1,0)
@@ -110,6 +112,7 @@ DFW$mult_race <- ifelse(DFW$Ethnicity=="Two or More Races",1,0)
 DFW$nonres <- ifelse(DFW$Ethnicity=="Non-Resident Alien",1,0)
 DFW$pac_isl <- ifelse(DFW$Ethnicity=="Pacific Islander",1,0)
 DFW$indian <- ifelse(DFW$Ethnicity=="American Indian/Alaskan Native",1,0)
+DFW$algebra <- ifelse(DFW$Number=="202A" |DFW$Number=="202B",1,0)
 
 DFW$Female <- ifelse(DFW$GenderLabel=="Male",0,1)
 
@@ -125,89 +128,26 @@ DFW_202B <- DFW[DFW$Number=="202B",]
 DFW_204A <- DFW[DFW$Number=="204A",]
 DFW_204B <- DFW[DFW$Number=="204B",]
 DFW_204C <- DFW[DFW$Number=="204C",]
+DFW_introPhys <- DFW[DFW$Number=="204A" | DFW$Number=="202A",]
 ```
 
-Models
+Find best model (https://quantscience.rbind.io/2017/12/26/model-selection-for-multilevel-modeling/)
 ```{r}
-m1 <- (DFW ~ 1)
-m1.5 <- (DFW ~ LA)
-m2 <- (DFW ~ white)
-m3 <- (DFW ~ white + firstgen)
-m4 <- (DFW ~ white + firstgen + Female)
-m5 <- (DFW ~ white + firstgen + Female + LA)
-m6 <- (DFW ~ white*LA + firstgen*LA +Female*LA)
-
-m1d <- (DDFW ~ 1)
-m1.5d <- (DDFW ~ LA)
-m2d <- (DDFW ~ white)
-m3d <- (DDFW ~ white + firstgen)
-m4d <- (DDFW ~ white + firstgen + Female)
-m5d <- (DDFW ~ white + firstgen + Female + LA)
-m6d <- (DDFW ~ white*LA + firstgen*LA +Female*LA)
+#m_all <- (DDFW ~ firstgen*LA + Female*LA + nonwhite*LA + algebra*LA + (1|courID))
+m_all <- (DDFW ~ firstgen*LA*Female*nonwhite + algebra + (1|courID))
+options(na.action = "na.fail")
+m_dredge <- glmer(m_all, data=DFW_introPhys,family = binomial)
+dd <- dredge(m_dredge)
+model.sel(dd, rank=AIC)
 ```
 
-running models - physics
+running best model - intro phys
 ```{r}
-#p1 <- hglm(fixed = m1, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-#p1.5 <- hglm(fixed = m1.5, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-#p2 <- hglm(fixed = m2, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-#p3 <- hglm(fixed = m3, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-#p4 <- hglm(fixed = m4, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-#p5 <- hglm(fixed = m5, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-#p6 <- hglm(fixed = m6, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-
-p1d <- hglm(fixed = m1d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p1.5d <- hglm(fixed = m1.5d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p2d <- hglm(fixed = m2d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p3d <- hglm(fixed = m3d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p4d <- hglm(fixed = m4d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p5d <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-p6d <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_phys, family = binomial(link = logit), calc.like=TRUE)
-
-p5d202A <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_202A, family = binomial(link = logit), calc.like=TRUE)
-p5d202B <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_202B, family = binomial(link = logit), calc.like=TRUE)
-p5d204A <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_204A, family = binomial(link = logit), calc.like=TRUE)
-p5d204B <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_204B, family = binomial(link = logit), calc.like=TRUE)
-p5d204C <- hglm(fixed = m5d, random = ~ 1|courID, data=DFW_204C, family = binomial(link = logit), calc.like=TRUE)
-
-p6d202A <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_202A, family = binomial(link = logit), calc.like=TRUE)
-p6d202B <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_202B, family = binomial(link = logit), calc.like=TRUE)
-p6d204A <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_204A, family = binomial(link = logit), calc.like=TRUE)
-p6d204B <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_204B, family = binomial(link = logit), calc.like=TRUE)
-p6d204C <- hglm(fixed = m6d, random = ~ 1|courID, data=DFW_204C, family = binomial(link = logit), calc.like=TRUE)
+m_aic <- (DDFW ~ firstgen*LA + Female + nonwhite*LA + (1|courID))
+m_final <- glmer(m_aic, data=DFW_introPhys,family = binomial)
+summary(m_final)
 ```
 
-
-Model outputs - physics
-```{r}
-#summary(p1)
-#summary(p1.5)
-#summary(p2)
-#summary(p3)
-#summary(p4)
-#summary(p5)
-#summary(p6)
-
-summary(p1d)
-summary(p1.5d)
-summary(p2d)
-summary(p3d)
-summary(p4d)
-summary(p5d)
-summary(p6d)
-
-summary(p5d202A)
-summary(p5d202B)
-summary(p5d204A)
-summary(p5d204B)
-summary(p5d204C)
-
-summary(p6d202A)
-summary(p6d202B)
-summary(p6d204A)
-summary(p6d204B)
-summary(p6d204C)
-```
 
 Probabilities - physics (https://sebastiansauer.github.io/convert_logit2prob/)
 ```{r}
@@ -220,29 +160,4 @@ logit2prob <- function(logit){
 logit2prob(-1.5)
 logit2prob(-1.5)
 mean(DFW_phys$DFW)
-```
-
-cAIC - physics
-```{r}
-cAIC(p1)
-```
-
-running models - math & physics
-```{r}
-mp1 <- hglm(fixed = m1, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
-mp2 <- hglm(fixed = m2, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
-mp3 <- hglm(fixed = m3, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
-mp4 <- hglm(fixed = m4, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
-mp5 <- hglm(fixed = m5, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
-mp6 <- hglm(fixed = m6, random = ~ 1|courseID, data=DFW_math_phys, family = binomial(link = logit))
-```
-
-Model outputs - physics
-```{r}
-summary(mp1)
-summary(mp2)
-summary(mp3)
-summary(mp4)
-summary(mp5)
-summary(mp6)
 ```
