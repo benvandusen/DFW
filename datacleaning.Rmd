@@ -17,6 +17,8 @@ DFW<-DFW7_1_19
 library("cAIC4")
 library("MuMIn")
 library("lme4")
+library("dummies")
+library("dplyr")
 ```
 
 ID LA courses
@@ -95,59 +97,69 @@ DFW$DDFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW
 names(DFW)[names(DFW)=="INSTRUCTOR1_NAME"] <- "instructor"
 names(DFW)[names(DFW)=="FirstGeneration"] <- "firstgen"
 names(DFW)[names(DFW)=="COURSE_ID"] <- "course"
+names(DFW)[names(DFW)=="Ethnicity"] <- "race"
+names(DFW)[names(DFW)=="GenderLabel"] <- "gender"
 DFW$courID <- paste(DFW$Subject,DFW$course,DFW$Section,DFW$TERM, sep='')
+reduced <- select(DFW, "TERM", "Subject", "Number","courID", "Section", "instructor","firstgen", "gender", "race", "dependent_income", "LA", "DDFW")
+reduced <- as.data.frame(reduced)
 ```
 
 creating dummy variables
 ```{r}
+reduced <- dummy.data.frame(reduced, names=c("Number","race","firstgen","gender"),sep = "_")
+reduced <- cbind(reduced, select(DFW, "Number","race","firstgen","gender"))
 
-DFW$firstgen <- ifelse(DFW$firstgen=="First Generation Student",1,0)
-
-DFW$white <- ifelse(DFW$Ethnicity=="White",1,0)
-DFW$nonwhite <- ifelse(DFW$Ethnicity=="White",0,1)
-DFW$black <- ifelse(DFW$Ethnicity=="Black/African American",1,0)
-DFW$unknown <- ifelse(DFW$Ethnicity=="Unknown",1,ifelse(DFW$Ethnicity=="NULL",1,0))
-DFW$asian <- ifelse(DFW$Ethnicity=="Asian",1,0)
-DFW$mult_race <- ifelse(DFW$Ethnicity=="Two or More Races",1,0)
-DFW$nonres <- ifelse(DFW$Ethnicity=="Non-Resident Alien",1,0)
-DFW$pac_isl <- ifelse(DFW$Ethnicity=="Pacific Islander",1,0)
-DFW$indian <- ifelse(DFW$Ethnicity=="American Indian/Alaskan Native",1,0)
-DFW$algebra <- ifelse(DFW$Number=="202A" |DFW$Number=="202B",1,0)
-
-DFW$Female <- ifelse(DFW$GenderLabel=="Male",0,1)
-
+reduced$nonwhite <- ifelse(reduced$race=="White",0,1)
+reduced$algebra <- ifelse(reduced$Number=="202A" |DFW$Number=="202B",1,0)
+reduced$Female <- ifelse(reduced$gender=="Male",0,1)
 ```
 
 subset data
 ```{r}
-DFW_phys <- DFW[DFW$Subject=="PHYS",]
-DFW_math <- DFW[DFW$Subject=="MATH",]
-DFW_math_phys <- DFW[DFW$Subject=="PHYS" | DFW$Subject=="MATH",]
-DFW_202A <- DFW[DFW$Number=="202A",]
-DFW_202B <- DFW[DFW$Number=="202B",]
-DFW_204A <- DFW[DFW$Number=="204A",]
-DFW_204B <- DFW[DFW$Number=="204B",]
-DFW_204C <- DFW[DFW$Number=="204C",]
-DFW_introPhys <- DFW[DFW$Number=="204A" | DFW$Number=="202A",]
+red_phys <- reduced[reduced$Subject=="PHYS",]
+red_math <- reduced[reduced$Subject=="MATH",]
+red_math_phys <- reduced[reduced$Subject=="PHYS" | reduced$Subject=="MATH",]
+red_202A <- reduced[reduced$Number=="202A",]
+red_202B <- reduced[reduced$Number=="202B",]
+red_204A <- reduced[reduced$Number=="204A",]
+red_204B <- reduced[reduced$Number=="204B",]
+red_204C <- reduced[reduced$Number=="204C",]
+red_introPhys <- reduced[reduced$Number=="204A" | reduced$Number=="202A",]
+red_202_204 <- reduced[reduced$Number=="204A" | reduced$Number=="204B" | reduced$Number=="204C" | reduced$Number=="202A" | reduced$Number=="202B",]
 ```
 
-Find best model (https://quantscience.rbind.io/2017/12/26/model-selection-for-multilevel-modeling/)
+Find best model (intro physics) (https://quantscience.rbind.io/2017/12/26/model-selection-for-multilevel-modeling/)
 ```{r}
 #m_all <- (DDFW ~ firstgen*LA + Female*LA + nonwhite*LA + algebra*LA + (1|courID))
 m_all <- (DDFW ~ firstgen*LA*Female*nonwhite + algebra + (1|courID))
 options(na.action = "na.fail")
-m_dredge <- glmer(m_all, data=DFW_introPhys,family = binomial)
-dd <- dredge(m_dredge)
-model.sel(dd, rank=AIC)
+intro_mod_dredge <- glmer(m_all, data=red_introPhys,family = binomial)
+intro_dredge <- dredge(intro_mod_dredge)
+model.sel(intro_dredge, rank=AIC)
+```
+
+Find best model (between classes) (https://quantscience.rbind.io/2017/12/26/model-selection-for-multilevel-modeling/)
+```{r}
+m_courses <- (DDFW ~ Number_204B*LA + Number_204C*LA + Number_202A*LA + Number_202B*LA + (1|courID))
+options(na.action = "na.fail")
+phys_mod_dredge <- glmer(m_courses, data=red_202_204,family = binomial)
+phys_dredge <- dredge(phys_mod_dredge)
+model.sel(phys_dredge, rank=AIC)
 ```
 
 running best model - intro phys
 ```{r}
-m_aic <- (DDFW ~ firstgen*LA + Female + nonwhite*LA + (1|courID))
-m_final <- glmer(m_aic, data=DFW_introPhys,family = binomial)
-summary(m_final)
+intro_mod_final <- (DDFW ~ firstgen*LA + Female + nonwhite*LA + (1|courID))
+intro_m_final <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
+summary(intro_m_final)
 ```
 
+running best model - physics
+```{r}
+phys_mod_final <- (DDFW ~ Number_204B*LA + Number_204C*LA + Number_202A*LA + Number_202B*LA + (1|courID))
+phys_m_final <- glmer(phys_mod_final, data=red_202_204,family = binomial)
+summary(phys_m_final)
+```
 
 Probabilities - physics (https://sebastiansauer.github.io/convert_logit2prob/)
 ```{r}
