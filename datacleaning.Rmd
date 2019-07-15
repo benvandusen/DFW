@@ -112,6 +112,7 @@ reduced <- cbind(reduced, select(DFW, "Number","race","firstgen","gender"))
 reduced$nonwhite <- ifelse(reduced$race=="White",0,1)
 reduced$algebra <- ifelse(reduced$Number=="202A" |DFW$Number=="202B",1,0)
 reduced$Female <- ifelse(reduced$gender=="Male",0,1)
+reduced$firstgen <- ifelse(reduced$firstgen=="First Generation Student",1,0)
 ```
 
 subset data
@@ -149,9 +150,14 @@ model.sel(phys_dredge, rank=AIC)
 
 running best model - intro phys
 ```{r}
-intro_mod_final <- (DDFW ~ firstgen*LA + Female + nonwhite*LA + (1|courID))
+intro_mod_uncond <- (DDFW ~ + (1|courID))
+intro_m_uncond <- glmer(intro_mod_uncond, data=red_introPhys,family = binomial)
+
+intro_mod_final <- (DDFW ~ firstgen*LA + Female*LA + nonwhite*LA + firstgen*nonwhite + (1|courID))
 intro_m_final <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
+summary(intro_m_uncond)
 summary(intro_m_final)
+ICC <- 0.3102/(0.3102+pi^2/3)
 ```
 
 running best model - physics
