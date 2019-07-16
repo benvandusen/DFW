@@ -19,6 +19,30 @@ library("MuMIn")
 library("lme4")
 library("dummies")
 library("dplyr")
+library(foreach)
+library(ggplot2)
+library(multcomp)
+```
+
+```{r}
+logit2prob <- function(logit){
+  odds <- exp(logit)
+  prob <- odds / (1 + odds)
+  return(prob)
+}
+
+model_probs <- function(courses){
+probcourses <- summary(courses)
+
+temp <- data.frame(group=rownames(probcourses$linfct),
+             q = probcourses$test$coefficients, 
+             se = (probcourses$test$sigma))
+
+temp$UL <- temp$q+temp$se
+temp$LL <- temp$q-temp$se
+temp2 <- logit2prob(temp[c(2,4,5)])
+return <- temp2
+}
 ```
 
 ID LA courses
@@ -167,15 +191,97 @@ phys_m_final <- glmer(phys_mod_final, data=red_202_204,family = binomial)
 summary(phys_m_final)
 ```
 
-Probabilities - physics (https://sebastiansauer.github.io/convert_logit2prob/)
+Logits
 ```{r}
-logit2prob <- function(logit){
-  odds <- exp(logit)
-  prob <- odds / (1 + odds)
-  return(prob)
-}
+#courses
+#(Int, 204B,LA,204C, 202A,202B,204B:LA ,204C:LA,202A:LA,202B:LA)
+p204A=    c(1, 0,0,0, 0,0,0, 0,0,0)
+p204ALA=  c(1, 0,1,0, 0,0,0, 0,0,0)
+p204B=    c(1, 1,0,0, 0,0,0, 0,0,0)
+p204BLA=  c(1, 1,1,0, 0,0,1, 0,0,0)
+p204C=    c(1, 0,0,1, 0,0,0, 0,0,0)
+p204CLA=  c(1, 0,1,1, 0,0,0, 1,0,0)
+p202A=    c(1, 0,0,0, 1,0,0, 0,0,0)
+p202ALA=  c(1, 0,1,0, 1,0,0, 0,1,0)
+p202B=    c(1, 0,0,0, 0,1,0, 0,0,0)
+p202BLA=  c(1, 0,1,0, 0,1,0, 0,0,1)
 
-logit2prob(-1.5)
-logit2prob(-1.5)
-mean(DFW_phys$DFW)
+contrast_forms_course <- rbind ('p204A'=p204A,
+                                'p204A LA'=p204ALA,
+                                'p204B'=p204B,
+                                'p204B LA'=p204BLA,
+                                'p204C'=p204C,
+                                'p204C LA'=p204CLA,                                
+                                'p202A'=p202A,
+                                'p202A LA'=p202ALA,
+                                'p202B'=p202B,
+                                'p202B LA'=p202BLA)
+
+names(contrast_forms_course) <- c("Number_204B", "LA", "Number_204C", "Number_202A", "Number_202B", "Nmb_204B:LA", "LA:Nmb_204C", "LA:Nmb_202A", "LA:Nmb_202B")
+
+courses <- glht(phys_m_final, contrast_forms_course)
+
+#Students
+#(Int, fg,LA,fem,nwhi, fg:LA,fem:LA,nwhi:LA, fg:nwhi)
+WMR =   c(1, 0,0,0,0, 0,0,0, 0) #White, male, returning, no LA
+WMRL =  c(1, 0,1,0,0, 0,0,0, 0) #White, male, returning, LA
+BMR =   c(1, 0,0,0,1, 0,0,0, 0) 
+BMRL =  c(1, 0,1,0,1, 0,0,1, 0)
+WFR =   c(1, 0,0,1,0, 0,0,0, 0) 
+WFRL =  c(1, 0,1,1,0, 0,1,0, 0)
+WMF =   c(1, 1,0,0,0, 0,0,0, 0) 
+WMFL =  c(1, 1,1,0,0, 1,0,0, 0)
+BFR =   c(1, 0,0,1,1, 0,0,0, 0) 
+BFRL =  c(1, 0,1,1,1, 0,1,1, 0)
+BMF =   c(1, 1,0,0,1, 0,0,0, 1) 
+BMFL =  c(1, 1,1,0,1, 1,0,1, 1)
+BWF =   c(1, 1,0,1,1, 0,0,0, 1) 
+BWFL =  c(1, 1,1,1,1, 1,1,1, 1)
+
+contrast_forms_students <- rbind ('White Male'=WMR,
+                                'White Male with LA'=WMRL,
+                                'Non-White Male'=BMR,
+                                'Non-White Male LA'=BMRL,
+                                'White Female'=WFR,
+                                'White Female LA'=WFRL,                                
+                                'White male first-gen'=WMF,
+                                'White male first-gen LA'=WMFL,
+                                'Non-White female'=BFR,
+                                'Non-White female LA'=BFRL,
+                                'Non-White male first-gen'=BMF,
+                                'Non-White male first-gen LA'=BMFL,
+                                'Non-White female first-gen'=BWF,
+                                'Non-White female first-gen LA'=BWFL)
+
+names(contrast_forms_course) <- c("Number_204B", "LA", "Number_204C", "Number_202A", "Number_202B", "Nmb_204B:LA", "LA:Nmb_204C", "LA:Nmb_202A", "LA:Nmb_202B")
+
+students <- glht(intro_m_final, contrast_forms_students)
+
 ```
+
+Probabilities (https://sebastiansauer.github.io/convert_logit2prob/)
+```{r}
+phys_courses_prob <- model_probs(courses)
+phys_students_prob <- model_probs(students)
+```
+
+```{r}
+#phys_students_prob$race <- factor(contrast_p6_est$race, levels = c("Black", "Hispanic", "Island", "Other", "Asian",    "White"))
+ggplot(data=phys_courses_prob, aes(x=race, y=q, fill=gender))
+
+phys_courses_prob$course <- factor(c("204A", "204A", "204B", "204B", "204C", "204C", "202A", "202A", "202B", "202B"))
+phys_courses_prob$LA <- factor(c("0", "1", "0", "1", "0", "1", "0", "1", "0", "1"))
+
+qplot(course, q, phys_courses_prob, aes(x=course, y=q), geom="bar")
+
+ggplot(data=phys_courses_prob, aes(x=course, y=q, fill=LA)) + geom_bar(aes(fill = LA))
+
+
+ggplot(data=phys_courses_prob, aes(x=course, y=Q, fill=LA)) +geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge")+
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) +
+  ylab("DFW probability") +
+facet_grid(.~instruction, scales = "free", space = "free")
+
+```
+
+
