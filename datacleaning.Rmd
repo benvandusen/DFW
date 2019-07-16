@@ -116,7 +116,7 @@ DFW$LA[
 variables I care about
 ```{r}
 DFW <- DFW[!is.na(DFW$Grade_Group),]
-DFW$DFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="D",0,ifelse(DFW$Grade_Group=="CR",0,1)))))
+#DFW$DFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="D",0,ifelse(DFW$Grade_Group=="CR",0,1)))))
 DFW$DDFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="CR",0,1))))
 names(DFW)[names(DFW)=="INSTRUCTOR1_NAME"] <- "instructor"
 names(DFW)[names(DFW)=="FirstGeneration"] <- "firstgen"
@@ -124,7 +124,8 @@ names(DFW)[names(DFW)=="COURSE_ID"] <- "course"
 names(DFW)[names(DFW)=="Ethnicity"] <- "race"
 names(DFW)[names(DFW)=="GenderLabel"] <- "gender"
 DFW$courID <- paste(DFW$Subject,DFW$course,DFW$Section,DFW$TERM, sep='')
-reduced <- select(DFW, "TERM", "Subject", "Number","courID", "Section", "instructor","firstgen", "gender", "race", "dependent_income", "LA", "DDFW")
+
+reduced <- select(DFW, TERM, Subject, Number,courID, Section, instructor,firstgen, gender, race, dependent_income, LA, DDFW)
 reduced <- as.data.frame(reduced)
 ```
 
