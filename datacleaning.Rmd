@@ -18,10 +18,10 @@ library("cAIC4")
 library("MuMIn")
 library("lme4")
 library("dummies")
-library("dplyr")
 library(foreach)
 library(ggplot2)
 library(multcomp)
+library("dplyr")
 ```
 
 ```{r}
@@ -125,14 +125,14 @@ names(DFW)[names(DFW)=="Ethnicity"] <- "race"
 names(DFW)[names(DFW)=="GenderLabel"] <- "gender"
 DFW$courID <- paste(DFW$Subject,DFW$course,DFW$Section,DFW$TERM, sep='')
 
-reduced <- select(DFW, TERM, Subject, Number,courID, Section, instructor,firstgen, gender, race, dependent_income, LA, DDFW)
-reduced <- as.data.frame(reduced)
+reduced <- as.data.frame(dplyr::select(DFW, TERM, Subject, Number,courID, Section, instructor,firstgen, gender, race, dependent_income, LA, DDFW))
+
 ```
 
 creating dummy variables
 ```{r}
 reduced <- dummy.data.frame(reduced, names=c("Number","race","firstgen","gender"),sep = "_")
-reduced <- cbind(reduced, select(DFW, "Number","race","firstgen","gender"))
+reduced <- cbind(reduced, dplyr::select(DFW, "Number","race","firstgen","gender"))
 
 reduced$nonwhite <- ifelse(reduced$race=="White",0,1)
 reduced$algebra <- ifelse(reduced$Number=="202A" |DFW$Number=="202B",1,0)
@@ -232,6 +232,8 @@ WFR =   c(1, 0,0,1,0, 0,0,0, 0)
 WFRL =  c(1, 0,1,1,0, 0,1,0, 0)
 WMF =   c(1, 1,0,0,0, 0,0,0, 0) 
 WMFL =  c(1, 1,1,0,0, 1,0,0, 0)
+WFF =   c(1, 1,0,1,0, 0,0,0, 0) 
+WFFL =  c(1, 1,1,1,0, 1,1,0, 0)
 BFR =   c(1, 0,0,1,1, 0,0,0, 0) 
 BFRL =  c(1, 0,1,1,1, 0,1,1, 0)
 BMF =   c(1, 1,0,0,1, 0,0,0, 1) 
@@ -239,16 +241,18 @@ BMFL =  c(1, 1,1,0,1, 1,0,1, 1)
 BWF =   c(1, 1,0,1,1, 0,0,0, 1) 
 BWFL =  c(1, 1,1,1,1, 1,1,1, 1)
 
-contrast_forms_students <- rbind ('White Male'=WMR,
-                                'White Male with LA'=WMRL,
-                                'Non-White Male'=BMR,
-                                'Non-White Male LA'=BMRL,
-                                'White Female'=WFR,
-                                'White Female LA'=WFRL,                                
-                                'White male first-gen'=WMF,
-                                'White male first-gen LA'=WMFL,
+contrast_forms_students <- rbind ('White male'=WMR,
+                                'White male with LA'=WMRL,
+                                'White female'=WFR,
+                                'White female LA'=WFRL,                                
+                                'Non-White male'=BMR,
+                                'Non-White male LA'=BMRL,
                                 'Non-White female'=BFR,
                                 'Non-White female LA'=BFRL,
+                                'White male first-gen'=WMF,
+                                'White male first-gen LA'=WMFL,
+                                'White female first-gen'=WFF,
+                                'White female first-gen LA'=WFFL,
                                 'Non-White male first-gen'=BMF,
                                 'Non-White male first-gen LA'=BMFL,
                                 'Non-White female first-gen'=BWF,
@@ -268,20 +272,30 @@ phys_students_prob <- model_probs(students)
 
 ```{r}
 #phys_students_prob$race <- factor(contrast_p6_est$race, levels = c("Black", "Hispanic", "Island", "Other", "Asian",    "White"))
-ggplot(data=phys_courses_prob, aes(x=race, y=q, fill=gender))
+
 
 phys_courses_prob$course <- factor(c("204A", "204A", "204B", "204B", "204C", "204C", "202A", "202A", "202B", "202B"))
-phys_courses_prob$LA <- factor(c("0", "1", "0", "1", "0", "1", "0", "1", "0", "1"))
+phys_courses_prob$instruction <- factor(c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
 
-qplot(course, q, phys_courses_prob, aes(x=course, y=q), geom="bar")
+courseplot <- ggplot(phys_courses_prob, aes(x=course, y=q, fill=instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) +
+  ylab("DFW probability")
 
-ggplot(data=phys_courses_prob, aes(x=course, y=q, fill=LA)) + geom_bar(aes(fill = LA))
+plot(courseplot)
+#qplot(course, q, phys_courses_prob, aes(x=course, y=q), geom="bar")
 
 
-ggplot(data=phys_courses_prob, aes(x=course, y=Q, fill=LA)) +geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge")+
+phys_students_prob$demo <- factor(c("White Male", "White Male", "White Female", "White Female", "Non-White Male", "Non-White Male", "Non-White Female", "Non-White Female", "White Male", " White Male", "White Female", "White Female", "Non-White Male", "Non-White Male", "Non-White Female", "Non-White Female"))
+phys_students_prob$Race <- factor(c("White", "White", "White", "White", "Non-White", "Non-White", "Non-White", "Non-White", "White", "White", "White", "White", "Non-White", "Non-White", "Non-White", "Non-White"))
+phys_students_prob$instruction <- factor(c("traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA"))
+phys_students_prob$firstgen <- factor(c("non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen"))
+
+studentplot <- ggplot(phys_students_prob, aes(x=demo, y=q, fill=instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
   theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) +
   ylab("DFW probability") +
-facet_grid(.~instruction, scales = "free", space = "free")
+facet_grid(.~firstgen, scales = "free", space = "free")
+
+plot(studentplot)
 
 ```
 
