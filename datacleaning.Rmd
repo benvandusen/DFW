@@ -285,7 +285,7 @@ plot(courseplot)
 #qplot(course, q, phys_courses_prob, aes(x=course, y=q), geom="bar")
 
 
-phys_students_prob$demo <- factor(c("White Male", "White Male", "White Female", "White Female", "Non-White Male", "Non-White Male", "Non-White Female", "Non-White Female", "White Male", " White Male", "White Female", "White Female", "Non-White Male", "Non-White Male", "Non-White Female", "Non-White Female"))
+phys_students_prob$demo <- factor(c("White Male", "White Male", "White Female", "White Female", "Non-White Male", "Non-White Male", "Non-White Female", "Non-White Female", "White Male", "White Male", "White Female", "White Female", "Non-White Male", "Non-White Male", "Non-White Female", "Non-White Female"))
 phys_students_prob$Race <- factor(c("White", "White", "White", "White", "Non-White", "Non-White", "Non-White", "Non-White", "White", "White", "White", "White", "Non-White", "Non-White", "Non-White", "Non-White"))
 phys_students_prob$instruction <- factor(c("traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA"))
 phys_students_prob$firstgen <- factor(c("non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen"))
