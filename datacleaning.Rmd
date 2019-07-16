@@ -299,4 +299,27 @@ plot(studentplot)
 
 ```
 
+#Descriptive statistics by lecture and gender
+```{r}
+#variables: M, group by
 
+desc2 <- foreach(i=1:10, .combine=rbind) %do% {
+temp <- MIdata[[i]]
+temp$race <- ifelse(temp$black_no_int ==1, "Black",ifelse(temp$hispanic_no_int ==1, "Hispanic",ifelse(temp$asian_no_int ==1, "Asian",ifelse(temp$pacisland_no_int ==1, "Island",ifelse(temp$race_other_no_int ==1, "Other","White")))))
+desc <- temp %>% group_by(lecture, gend_URM) %>% summarise(N = length(pre_score),
+                                                                 pre_mean = mean(pre_score),
+                                                                 pre_sd = sd(pre_score),
+                                                                 post_mean = mean(post_score),
+                                                                 post_sd = sd(post_score),
+                                                                 gain_mean = mean (post_score-pre_score),
+                                                                 gain_sd = sd(post_score-pre_score)
+                                                                 )
+
+
+return <- desc
+}
+desc <- desc2 %>% group_by(lecture, gend_URM) %>% summarise_all(funs(mean))
+desc$lecture <- ifelse(desc$lecture ==1, "Lecture","Collaborative")
+desc$gend_URM <- ifelse(desc$gend_URM==1, "Female","Male")
+kable(desc, digits=1)
+```
