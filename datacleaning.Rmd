@@ -11,9 +11,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Load data
 ```{r message=FALSE}
-load("~/DFW7_1_19.RData")
-DFW<-DFW7_1_19
+DFW<-load("~/DFW7_1_19.RData")
+```
 
+Load packages
+```{r message=FALSE}
 library("cAIC4")
 library("MuMIn")
 library("lme4")
@@ -24,6 +26,10 @@ library(multcomp)
 library("dplyr")
 library(lattice)
 library(hglm)
+plot_col <- c('#66c2a5', '#fc8d62', '#8da0cb')
+#cbbpalette <- c('#000000','#E69F00','#56B4E9')
+cbbpalette <- c( "#009E73", "#e79f00", "#9ad0f3", "#0072B2", "#D55E00", 
+    "#CC79A7","#000000", "#F0E442") #colorblind and grayscale friendly.
 ```
 
 ```{r}
@@ -156,6 +162,15 @@ red_introPhys <- reduced[reduced$Number=="204A" | reduced$Number=="202A",]
 red_202_204 <- reduced[reduced$Number=="204A" | reduced$Number=="204B" | reduced$Number=="204C" | reduced$Number=="202A" | reduced$Number=="202B",]
 ```
 
+Simple model - intro phys
+```{r}
+intro_mod_simple <- (DDFW ~ LA + (1|courID))
+intro_m_simple <- glmer(intro_mod_simple, data=red_introPhys,family = binomial)
+
+summary(intro_m_simple)
+ICC <- 0.3102/(0.3102+pi^2/3)
+```
+
 Find best model (intro physics) (https://quantscience.rbind.io/2017/12/26/model-selection-for-multilevel-modeling/)
 ```{r}
 #m_all <- (DDFW ~ firstgen*LA + Female*LA + nonwhite*LA + algebra*LA + (1|courID))
@@ -196,6 +211,14 @@ summary(phys_m_final)
 
 Logits
 ```{r}
+#simple
+#(Int, LA)
+trad= c(1,0)
+LAsup=c(1,1)
+
+simple_example <- rbind (trad, LAsup)
+simple2 <- glht(intro_m_simple, simple_example)
+
 #courses
 #(Int, 204B,LA,204C, 202A,202B,204B:LA ,204C:LA,202A:LA,202B:LA)
 p204A=    c(1, 0,0,0, 0,0,0, 0,0,0)
@@ -266,20 +289,78 @@ students <- glht(intro_m_final, contrast_forms_students)
 
 ```
 
+Equity logits #THIS ISN'T HOW TO DO THIS BECAUSE OF LOGITS
+```{r}
+#Equity of outcomes
+#(Int, fg,LA,fem,nwhi, fg:LA,fem:LA,nwhi:LA, fg:nwhi)
+WMR =   c(0, 0,0,0,0, 0,0,0, 0) #White, male, returning, no LA
+WMRL =  c(0, 0,0,0,0, 0,0,0, 0) #White, male, returning, LA
+BMR =   c(0, 0,0,0,1, 0,0,0, 0) 
+BMRL =  c(0, 0,0,0,1, 0,0,1, 0)
+WFR =   c(0, 0,0,1,0, 0,0,0, 0) 
+WFRL =  c(0, 0,0,1,0, 0,1,0, 0)
+WMF =   c(0, 1,0,0,0, 0,0,0, 0) 
+WMFL =  c(0, 1,0,0,0, 1,0,0, 0)
+WFF =   c(0, 1,0,1,0, 0,0,0, 0) 
+WFFL =  c(0, 1,0,1,0, 1,1,0, 0)
+BFR =   c(0, 0,0,1,1, 0,0,0, 0) 
+BFRL =  c(0, 0,0,1,1, 0,1,1, 0)
+BMF =   c(0, 1,0,0,1, 0,0,0, 1) 
+BMFL =  c(0, 1,0,0,1, 1,0,1, 1)
+BWF =   c(0, 1,0,1,1, 0,0,0, 1) 
+BWFL =  c(0, 1,0,1,1, 1,1,1, 1)
+
+eqout <- rbind (                'White Women'=WFR,
+                                'White Women LA'=WFRL,                                
+                                'Men of Color'=BMR,
+                                'Men of Color LA'=BMRL,
+                                'Women of Color'=BFR,
+                                'Women of Color LA'=BFRL,
+                                'First-gen White Men'=WMF,
+                                'First-gen White Men LA'=WMFL,
+                                'First-gen White Women'=WFF,
+                                'First-gen White Women LA'=WFFL,
+                                'First-gen Men of Color'=BMF,
+                                'First-gen Men of Color LA'=BMFL,
+                                'First-gen Women of Color'=BWF,
+                                'First-gen Women of Color LA'=BWFL)
+
+names(eqout) <- c("Int", "fg", "LA", "fem", "POC", "fg:LA", "fem:LA", "POC:LA", "fg:POC")
+
+eq_out <- glht(intro_m_final, eqout)
+
+```
+
 Probabilities (https://sebastiansauer.github.io/convert_logit2prob/)
 ```{r}
+phys_simple_prob <- model_probs(simple2)
 phys_courses_prob <- model_probs(courses)
 phys_students_prob <- model_probs(students)
 ```
 
+Equity of outcomes prob
+```{r}
+
+eq_out_prob <- data.frame(group=rownames(phys_students_prob),
+             q = phys_students_prob$q-phys_students_prob$q[[1]],
+             se = (phys_students_prob$test$sigma))
+             up = phys_students_prob$q-phys_students_prob$UL+)
+            
+             
+              se = (probcourses$test$sigma))
+
+temp$UL <- temp$q+temp$se
+temp$LL <- temp$q-temp$se
+temp2 <- logit2prob(temp[c(2,4,5)])
+```
+
 Course plot
 ```{r}
-phys_courses_prob$course <- factor(c("204A", "204A", "204B", "204B", "204C", "204C", "202A", "202A", "202B", "202B"))
-phys_courses_prob$instruction <- factor(c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
-phys_courses_prob$course <- factor(c("204A", "204A", "204B", "204B", "204C", "204C", "202A", "202A", "202B", "202B"))
-phys_courses_prob$instruction <- factor(c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
-phys_courses_prob$math <- factor(c("Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Algebra-based", "Algebra-based", "Algebra-based", "Algebra-based"))
-phys_courses_prob$semester <- factor(c("1st", "1st", "2nd", "2nd", "3rd", "3rd", "1st", "1st", "2nd", "2nd"))
+phys_courses_prob <- rbind(phys_simple_prob, phys_courses_prob)
+phys_courses_prob$course <- factor(c("All", "All", "204A", "204A", "204B", "204B", "204C", "204C", "202A", "202A", "202B", "202B"))
+phys_courses_prob$instruction <- factor(c("Traditional", "LA","Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
+phys_courses_prob$math <- factor(c("Overall", "Overall",  "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Algebra-based", "Algebra-based", "Algebra-based", "Algebra-based"))
+phys_courses_prob$semester <- factor(c("All", "All", "1st", "1st", "2nd", "2nd", "3rd", "3rd", "1st", "1st", "2nd", "2nd"))
 
 courseplot2 <- ggplot(phys_courses_prob, aes(x=semester, y=q, fill=instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
   theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) +
@@ -291,8 +372,8 @@ ggsave("courses.png", plot= last_plot(), dpi=300, width = 6, height = 4, units =
 
 Student plot
 ```{r}
-phys_students_prob$demo <- factor(c("White Male", "White Male", "White Female", "White Female", "Non-White Male", "Non-White Male", "Non-White Female", "Non-White Female", "White Male", "White Male", "White Female", "White Female", "Non-White Male", "Non-White Male", "Non-White Female", "Non-White Female"))
-phys_students_prob$Race <- factor(c("White", "White", "White", "White", "Non-White", "Non-White", "Non-White", "Non-White", "White", "White", "White", "White", "Non-White", "Non-White", "Non-White", "Non-White"))
+phys_students_prob$demo <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of color", "Women of color", "White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color"))
+phys_students_prob$Race <- factor(c("White", "White", "White", "White", "POC", "POC", "POC", "POC", "White", "White", "White", "White", "POC", "POC", "POC", "POC"))
 phys_students_prob$instruction <- factor(c("traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA"))
 phys_students_prob$firstgen <- factor(c("non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen"))
 
@@ -301,6 +382,21 @@ studentplot <- ggplot(phys_students_prob, aes(x=demo, y=q, fill=instruction)) + 
 
 plot(studentplot)
 ggsave("students.png", plot= last_plot(), dpi=300, width = 7, height = 6, units = "in", device = "png")
+
+```
+
+equity of outcome plot
+```{r}
+eq_out_prob$demo <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color"))
+eq_out_prob$Race <- factor(c("White", "White", "White", "White", "POC", "POC", "POC", "POC", "White", "White", "White", "White", "POC", "POC", "POC", "POC"))
+eq_out_prob$instruction <- factor(c("traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA"))
+eq_out_prob$firstgen <- factor(c("non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen"))
+
+eq_out_plot <- ggplot(eq_out_prob, aes(x=demo, y=q, fill=firstgen)) + geom_bar(stat = "identity", position= "dodge") + 
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("DFW probability") + facet_grid(.~instruction, scales = "free", space = "free")
+
+plot(eq_out_plot)
+ggsave("eq_out_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, units = "in", device = "png")
 
 ```
 
