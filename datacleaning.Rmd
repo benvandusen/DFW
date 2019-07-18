@@ -308,6 +308,7 @@ ggsave("students.png", plot= last_plot(), dpi=300, width = 7, height = 6, units 
 ```{r}
 desc <- red_phys %>% group_by(Number) %>% summarise(N = length(DDFW),
              sections = length(unique(courID)),
+             instructors = length(unique(instructor)),
               DDFW_mean = mean(DDFW),
              DDFW_N = sum(DDFW),
              LA_mean = mean(LA),
@@ -322,8 +323,32 @@ desc <- red_phys %>% group_by(Number) %>% summarise(N = length(DDFW),
              Male_N = sum(gender_Male),
              female_mean = mean(gender_Female),
              female_N = sum(gender_Female))
+
+total <- red_phys %>% summarise(N = length(DDFW),
+             sections = length(unique(courID)),
+             instructors = length(unique(instructor)),
+              DDFW_mean = mean(DDFW),
+             DDFW_N = sum(DDFW),
+             LA_mean = mean(LA),
+             LA_N = sum(LA),
+             White_mean = mean(race_White),
+             White_N = sum(race_White),
+             nonwhite_mean = mean(nonwhite),
+             nonwhite_N = sum(nonwhite),
+             firstgen_mean = mean(firstgen),
+             firstgen_N = sum(firstgen),
+             Male_mean = mean(gender_Male),
+             Male_N = sum(gender_Male),
+             female_mean = mean(gender_Female),
+             female_N = sum(gender_Female))
+total$Number <- "total"
+total <- total[c(18,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)]
+
+
 
 desc_intro <-red_introPhys %>% summarise(N = length(DDFW),
+                                         sections = length(unique(courID)),
+             instructors = length(unique(instructor)),
               DDFW_mean = mean(DDFW),
              DDFW_N = sum(DDFW),
              LA_mean = mean(LA),
@@ -338,9 +363,12 @@ desc_intro <-red_introPhys %>% summarise(N = length(DDFW),
              Male_N = sum(gender_Male),
              female_mean = mean(gender_Female),
              female_N = sum(gender_Female))
+desc_intro$Number <- "intro"
+desc_intro <- desc_intro[c(18,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17)]
 
+desc_course <- rbind(desc,total,desc_intro)
 
-desc2 <- red_phys %>% group_by(courID) %>% summarise(N = length(DDFW),
+desc_withincourse <- red_phys %>% group_by(courID) %>% summarise(N = length(DDFW),
               DDFW_mean = mean(DDFW),
              DDFW_N = sum(DDFW),
              LA_mean = mean(LA),
