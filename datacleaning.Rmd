@@ -44,8 +44,8 @@ logit2prob <- function(logit){
   return(prob)
 }
 
-logit2prob(-0.75) (White men without LAs)
-logit2prob(-0.5) (White men with LAs)
+logit2prob(-0.75) #(White men without LAs)
+logit2prob(-0.5) #(White men with LAs)
 
 model_probs <- function(courses){
 probcourses <- summary(courses)
