@@ -28,6 +28,7 @@ library("dplyr")
 library(lattice)
 library(hglm)
 library(gmodels)
+library(frequency)
 plot_col <- c('#66c2a5', '#fc8d62', '#8da0cb')
 #cbbpalette <- c('#000000','#E69F00','#56B4E9')
 cbbpalette <- c( "#009E73", "#e79f00", "#9ad0f3", "#0072B2", "#D55E00", 
@@ -463,7 +464,7 @@ ggsave("students.png", plot= last_plot(), dpi=300, width = 7, height = 6, units 
 
 Equality of outcome plot
 ```{r}
-eq_out_plot <- ggplot(eq_out_prob, aes(x=demo, y=q, fill=firstgen)) + geom_bar(stat = "identity", position= "dodge") + 
+eq_out_plot <- ggplot(eq_out_prob, aes(x=demo, y=q, fill=firstgen)) + geom_bar(stat = "identity", position= "dodge") + coord_flip()+
   theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("DFW probability") + facet_grid(.~instruction, scales = "free", space = "free")
 
 plot(eq_out_plot)
@@ -483,6 +484,13 @@ ggsave("eq_ind_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, uni
 
 #Descriptive statistics
 ```{r}
+desc_gen <- freq(red_phys$gender)
+desc_race <- freq(red_phys$race)
+desc_firstgen <- freq(red_phys$firstgen)
+desc_gen
+desc_race
+desc_firstgen
+
 desc <- red_phys %>% group_by(Number) %>% summarise(N = length(DDFW),
              sections = length(unique(courID)),
              instructors = length(unique(instructor)),
