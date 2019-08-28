@@ -320,9 +320,10 @@ phys_students_prob <- model_probs(students)
 phys_students_prob$seU <- phys_students_prob$UL-phys_students_prob$q
 phys_students_prob$seL <- phys_students_prob$LL-phys_students_prob$q
 phys_students_prob$demo <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color"))
+phys_students_prob$demo_fg <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "First Gen. White Men", "First Gen. White Men", "First Gen. White Women", "First Gen. White Women", "First Gen. Men of Color", "First Gen. Men of Color", "First Gen. Women of Color", "First Gen. Women of Color"))
 phys_students_prob$Race <- factor(c("White", "White", "White", "White", "POC", "POC", "POC", "POC", "White", "White", "White", "White", "POC", "POC", "POC", "POC"))
-phys_students_prob$instruction <- factor(c("traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA", "traditional", "LA"))
-phys_students_prob$firstgen <- factor(c("non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "non-firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen", "firstgen"))
+phys_students_prob$instruction <- factor(c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
+phys_students_prob$firstgen <- factor(c("NFG", "NFG", "NFG", "NFG", "NFG", "NFG", "NFG", "NFG", "FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG"))
 ```
 
 Equality of outcomes prob 
@@ -463,8 +464,12 @@ ggsave("students.png", plot= last_plot(), dpi=300, width = 7, height = 6, units 
 
 Equality of outcome plot
 ```{r}
-eq_out_plot <- ggplot(eq_out_prob, aes(x=demo, y=q, fill=firstgen)) + geom_bar(stat = "identity", position= "dodge") + coord_flip()+
-  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("DFW probability") + facet_grid(.~instruction, scales = "free", space = "free")
+eq_out_prob$demo_fg <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", " White Men", " White Men", " White Women", " White Women", " Men of Color", " Men of Color", " Women of Color", " Women of Color"))
+
+eq_out_prob <- eq_out_prob[-c(1,2),]
+
+eq_out_plot <- ggplot(eq_out_prob, aes(x=reorder(demo_fg, new.order=c(" Men of Color", " White Men", "Men of Color", " Women of Color", " White Women", "Women of Color", "White Women")), y=q, fill=firstgen)) + geom_bar(stat = "identity", position= "dodge") + coord_flip()+
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + facet_grid(.~instruction, scales = "free", space = "free") + xlab("") + scale_y_continuous(breaks=c(-0.1,-.05,0,0.05,.1,.15), limits=c(-0.1,0.2))
 
 plot(eq_out_plot)
 ggsave("eq_out_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, units = "in", device = "png")
@@ -473,7 +478,7 @@ ggsave("eq_out_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, uni
 
 equity of individuality plot
 ```{r}
-eq_ind_plot <- ggplot(eq_ind_prob, aes(x=demo, y=qdiff, fill=firstgen)) + geom_bar(stat = "identity", position= "dodge") + 
+eq_ind_plot <- ggplot(eq_ind_prob, aes(x=reorder(demo, new.order=c("White Men","White Women", "Men of Color", "Women of Color")), y=qdiff, fill=firstgen)) + geom_bar(stat = "identity", position= "dodge") + 
   theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("DFW probability")
 
 plot(eq_ind_plot)
