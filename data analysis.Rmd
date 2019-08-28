@@ -187,17 +187,17 @@ Find best model (intro physics) (https://quantscience.rbind.io/2017/12/26/model-
 m_all <- (DDFW ~ firstgen*LA*Female*nonwhite + algebra + (1|courID))
 options(na.action = "na.fail")
 intro_mod_dredge <- glmer(m_all, data=red_introPhys,family = binomial)
-intro_dredge <- dredge(intro_mod_dredge)
-model.sel(intro_dredge, rank=AIC)
+#intro_dredge <- dredge(intro_mod_dredge)
+#model.sel(intro_dredge, rank=AIC)
 ```
 
 Find best model (between classes) (https://quantscience.rbind.io/2017/12/26/model-selection-for-multilevel-modeling/)
 ```{r}
 m_courses <- (DDFW ~ Number_204B*LA + Number_204C*LA + Number_202A*LA + Number_202B*LA + (1|courID))
 options(na.action = "na.fail")
-phys_mod_dredge <- glmer(m_courses, data=red_202_204,family = binomial)
-phys_dredge <- dredge(phys_mod_dredge)
-model.sel(phys_dredge, rank=AIC)
+#phys_mod_dredge <- glmer(m_courses, data=red_202_204,family = binomial)
+#phys_dredge <- dredge(phys_mod_dredge)
+#model.sel(phys_dredge, rank=AIC)
 ```
 
 running best model - intro phys
@@ -212,7 +212,7 @@ summary(intro_m_final)
 ICC <- 0.3102/(0.3102+pi^2/3)
 ```
 
-running best model - physics
+running best model - across physics courses
 ```{r}
 phys_mod_final <- (DDFW ~ Number_204B*LA + Number_204C*LA + Number_202A*LA + Number_202B*LA + (1|courID))
 phys_m_final <- glmer(phys_mod_final, data=red_202_204,family = binomial)
@@ -276,7 +276,6 @@ BMFL =  c(1, 1,1,0,1, 1,0,1, 1)
 BWF =   c(1, 1,0,1,1, 0,0,0, 1) 
 BWFL =  c(1, 1,1,1,1, 1,1,1, 1)
 
-glh.test(phys_m_final, BMR)
 
 contrast_forms_students <- rbind ('White male'=WMR,
                                 'White male with LA'=WMRL,
