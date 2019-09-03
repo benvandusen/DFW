@@ -323,7 +323,7 @@ phys_students_prob$demo <- factor(c("White Men", "White Men", "White Women", "Wh
 phys_students_prob$demo_fg <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "First Gen. White Men", "First Gen. White Men", "First Gen. White Women", "First Gen. White Women", "First Gen. Men of Color", "First Gen. Men of Color", "First Gen. Women of Color", "First Gen. Women of Color"))
 phys_students_prob$Race <- factor(c("White", "White", "White", "White", "POC", "POC", "POC", "POC", "White", "White", "White", "White", "POC", "POC", "POC", "POC"))
 phys_students_prob$instruction <- factor(c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
-phys_students_prob$firstgen <- factor(c("NFG", "NFG", "NFG", "NFG", "NFG", "NFG", "NFG", "NFG", "FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG"))
+phys_students_prob$firstgen <- factor(c("Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG"))
 ```
 
 Equality of outcomes prob 
@@ -443,6 +443,7 @@ function(x,y){
 
 Course plot
 ```{r}
+phys_courses_prob$math <- factor(phys_courses_prob$math,levels = c("Overall", "Algebra-based", "Calculus-based"))
 
 courseplot2 <- ggplot(phys_courses_prob, aes(x=semester, y=q, fill=instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
   theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) +
