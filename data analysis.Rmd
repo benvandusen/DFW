@@ -314,7 +314,7 @@ phys_courses_prob <- rbind(phys_simple_prob, phys_courses_prob)
 phys_courses_prob$course <- factor(c("All", "All", "204A", "204A", "204B", "204B", "204C", "204C", "202A", "202A", "202B", "202B"))
 phys_courses_prob$instruction <- factor(c("Traditional", "LA","Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
 phys_courses_prob$math <- factor(c("Overall", "Overall",  "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Algebra-based", "Algebra-based", "Algebra-based", "Algebra-based"))
-phys_courses_prob$semester <- factor(c("All", "All", "1st", "1st", "2nd", "2nd", "3rd", "3rd", "1st", "1st", "2nd", "2nd"))
+phys_courses_prob$semester <- factor(c("All sem.", "All sem.", "1st sem.", "1st sem.", "2nd sem.", "2nd sem.", "3rd sem.", "3rd sem.", "1st sem.", "1st sem.", "2nd sem.", "2nd sem."))
 
 phys_students_prob <- model_probs(students)
 phys_students_prob$seU <- phys_students_prob$UL-phys_students_prob$q
