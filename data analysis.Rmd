@@ -455,6 +455,8 @@ ggsave("courses.png", plot= last_plot(), dpi=300, width = 6, height = 4, units =
 
 Student plot
 ```{r}
+phys_students_prob$firstgen <- factor(phys_students_prob$firstgen,levels = c("Non-FG", "FG"))
+
 studentplot <- ggplot(phys_students_prob, aes(x=demo, y=q, fill=instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
   theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("DFW probability") + facet_grid(.~firstgen, scales = "free", space = "free")
 
