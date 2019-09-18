@@ -137,25 +137,25 @@ DFW <- DFW[!is.na(DFW$Grade_Group),]
 #DFW$DFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="D",0,ifelse(DFW$Grade_Group=="CR",0,1)))))
 DFW$DDFW<-ifelse(DFW$Grade_Group=="A",0,ifelse(DFW$Grade_Group=="B",0,ifelse(DFW$Grade_Group=="C",0,ifelse(DFW$Grade_Group=="CR",0,1))))
 names(DFW)[names(DFW)=="INSTRUCTOR1_NAME"] <- "instructor"
-names(DFW)[names(DFW)=="FirstGeneration"] <- "firstgen"
+names(DFW)[names(DFW)=="FirstGeneration"] <- "FG_Status"
 names(DFW)[names(DFW)=="COURSE_ID"] <- "course"
 names(DFW)[names(DFW)=="Ethnicity"] <- "race"
 names(DFW)[names(DFW)=="GenderLabel"] <- "gender"
 DFW$courID <- paste(DFW$Subject,DFW$course,DFW$Section,DFW$TERM, sep='')
 
-reduced <- as.data.frame(dplyr::select(DFW, TERM, Subject, Number,courID, Section, instructor,firstgen, gender, race, dependent_income, LA, DDFW))
+reduced <- as.data.frame(dplyr::select(DFW, TERM, Subject, Number,courID, Section, instructor,FG_Status, gender, race, dependent_income, LA, DDFW))
 
 ```
 
 creating dummy variables
 ```{r}
-reduced <- dummy.data.frame(reduced, names=c("Number","race","firstgen","gender"),sep = "_")
-reduced <- cbind(reduced, dplyr::select(DFW, "Number","race","firstgen","gender"))
+reduced <- dummy.data.frame(reduced, names=c("Number","race","FG_Status","gender"),sep = "_")
+reduced <- cbind(reduced, dplyr::select(DFW, "Number","race","FG_Status","gender"))
 
 reduced$nonwhite <- ifelse(reduced$race=="White",0,1)
 reduced$algebra <- ifelse(reduced$Number=="202A" |DFW$Number=="202B",1,0)
 reduced$Female <- ifelse(reduced$gender=="Male",0,1)
-reduced$firstgen <- ifelse(reduced$firstgen=="First Generation Student",1,0)
+reduced$FG_Status <- ifelse(reduced$FG_Status=="First Generation Student",1,0)
 ```
 
 subset data
@@ -183,8 +183,8 @@ ICC <- 0.3102/(0.3102+pi^2/3)
 
 Find best model (intro physics) (https://quantscience.rbind.io/2017/12/26/model-selection-for-multilevel-modeling/)
 ```{r}
-#m_all <- (DDFW ~ firstgen*LA + Female*LA + nonwhite*LA + algebra*LA + (1|courID))
-m_all <- (DDFW ~ firstgen*LA*Female*nonwhite + algebra + (1|courID))
+#m_all <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + algebra*LA + (1|courID))
+m_all <- (DDFW ~ FG_Status*LA*Female*nonwhite + algebra + (1|courID))
 options(na.action = "na.fail")
 intro_mod_dredge <- glmer(m_all, data=red_introPhys,family = binomial)
 #intro_dredge <- dredge(intro_mod_dredge)
@@ -205,9 +205,13 @@ running best model - intro phys
 intro_mod_uncond <- (DDFW ~ + (1|courID))
 intro_m_uncond <- glmer(intro_mod_uncond, data=red_introPhys,family = binomial)
 
-intro_mod_final <- (DDFW ~ firstgen*LA + Female*LA + nonwhite*LA + firstgen*nonwhite + (1|courID))
+intro_mod_overall <- (DDFW ~ LA + (1|courID))
+intro_m_overall <- glmer(intro_mod_overall, data=red_introPhys,family = binomial)
+
+intro_mod_final <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + (1|courID))
 intro_m_final <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
 summary(intro_m_uncond)
+summary(intro_m_overall)
 summary(intro_m_final)
 ICC <- 0.3102/(0.3102+pi^2/3)
 ```
@@ -257,6 +261,15 @@ names(contrast_forms_course) <- c("Number_204B", "LA", "Number_204C", "Number_20
 
 courses <- glht(phys_m_final, contrast_forms_course)
 
+#overall
+#(Int, LA)
+trad = c(1,0)
+LA = c(1,1)
+
+contrast_forms_overall <- rbind ('Traditional'=trad,
+                                 'LA'=LA)
+overall <- glht(intro_m_overall, contrast_forms_overall)
+
 #Students
 #(Int, fg,LA,fem,nwhi, fg:LA,fem:LA,nwhi:LA, fg:nwhi)
 WMR =   c(1, 0,0,0,0, 0,0,0, 0) #White, male, returning, no LA
@@ -294,8 +307,6 @@ contrast_forms_students <- rbind ('White male'=WMR,
                                 'Non-White female first-gen'=BWF,
                                 'Non-White female first-gen LA'=BWFL)
 
-names(contrast_forms_course) <- c("Number_204B", "LA", "Number_204C", "Number_202A", "Number_202B", "Nmb_204B:LA", "LA:Nmb_204C", "LA:Nmb_202A", "LA:Nmb_202B")
-
 students <- glht(intro_m_final, contrast_forms_students)
 
 ```
@@ -312,9 +323,18 @@ phys_courses_prob$seU <- phys_courses_prob$UL-phys_courses_prob$q
 phys_courses_prob$seL <- phys_courses_prob$LL-phys_courses_prob$q
 phys_courses_prob <- rbind(phys_simple_prob, phys_courses_prob)
 phys_courses_prob$course <- factor(c("All", "All", "204A", "204A", "204B", "204B", "204C", "204C", "202A", "202A", "202B", "202B"))
-phys_courses_prob$instruction <- factor(c("Traditional", "LA","Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
+phys_courses_prob$Instruction <- factor(c("Traditional", "LA","Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
 phys_courses_prob$math <- factor(c("Overall", "Overall",  "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Calculus-based", "Algebra-based", "Algebra-based", "Algebra-based", "Algebra-based"))
 phys_courses_prob$semester <- factor(c("All sem.", "All sem.", "1st sem.", "1st sem.", "2nd sem.", "2nd sem.", "3rd sem.", "3rd sem.", "1st sem.", "1st sem.", "2nd sem.", "2nd sem."))
+
+overall_prob <- model_probs(overall)
+overall_prob$seU <- overall_prob$UL-overall_prob$q
+overall_prob$seL <- overall_prob$LL-overall_prob$q
+overall_prob$demo <- factor(c("Overall", "Overall"))
+overall_prob$demo_fg <- factor(c("Overall", "Overall"))
+overall_prob$Race <- factor(c("Overall", "Overall"))
+overall_prob$Instruction <- factor(c("Traditional", "LA"))
+overall_prob$FG_Status <- factor(c("Overall", "Overall"))
 
 phys_students_prob <- model_probs(students)
 phys_students_prob$seU <- phys_students_prob$UL-phys_students_prob$q
@@ -322,22 +342,23 @@ phys_students_prob$seL <- phys_students_prob$LL-phys_students_prob$q
 phys_students_prob$demo <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color"))
 phys_students_prob$demo_fg <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "First Gen. White Men", "First Gen. White Men", "First Gen. White Women", "First Gen. White Women", "First Gen. Men of Color", "First Gen. Men of Color", "First Gen. Women of Color", "First Gen. Women of Color"))
 phys_students_prob$Race <- factor(c("White", "White", "White", "White", "POC", "POC", "POC", "POC", "White", "White", "White", "White", "POC", "POC", "POC", "POC"))
-phys_students_prob$instruction <- factor(c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
-phys_students_prob$firstgen <- factor(c("Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG"))
+phys_students_prob$Instruction <- factor(c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
+phys_students_prob$FG_Status <- factor(c("Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG"))
+phys_students_prob2 <- rbind(phys_students_prob,overall_prob)
 ```
 
 Equality of outcomes prob 
 ```{r}
 
 eq_out_prob <- data.frame(group=rownames(phys_students_prob),
-             q = ifelse(phys_students_prob$instruction=="LA",phys_students_prob$q-phys_students_prob$q[[2]],
+             q = ifelse(phys_students_prob$Instruction=="LA",phys_students_prob$q-phys_students_prob$q[[2]],
                phys_students_prob$q-phys_students_prob$q[[1]]),
              demo = phys_students_prob$demo,
              Race = phys_students_prob$Race,
-             instruction = phys_students_prob$instruction,
-             firstgen = phys_students_prob$firstgen,
-             seU = ifelse(phys_students_prob$instruction=="LA", ((phys_students_prob$seU[[2]])^2+(phys_students_prob$seL)^2)^0.5, ((phys_students_prob$seU[[1]])^2+(phys_students_prob$seL)^2)^0.5),
-             seL = ifelse(phys_students_prob$instruction=="LA", ((phys_students_prob$seL[[2]])^2+(phys_students_prob$seU)^2)^0.5, ((phys_students_prob$seL[[1]])^2+(phys_students_prob$seU)^2)^0.5))
+             Instruction = phys_students_prob$Instruction,
+             FG_Status = phys_students_prob$FG_Status,
+             seU = ifelse(phys_students_prob$Instruction=="LA", ((phys_students_prob$seU[[2]])^2+(phys_students_prob$seL)^2)^0.5, ((phys_students_prob$seU[[1]])^2+(phys_students_prob$seL)^2)^0.5),
+             seL = ifelse(phys_students_prob$Instruction=="LA", ((phys_students_prob$seL[[2]])^2+(phys_students_prob$seU)^2)^0.5, ((phys_students_prob$seL[[1]])^2+(phys_students_prob$seU)^2)^0.5))
 eq_out_prob$UL <- eq_out_prob$q+1.96*eq_out_prob$seU
 eq_out_prob$LL <- eq_out_prob$q-1.96*eq_out_prob$seL
 
@@ -354,14 +375,14 @@ Equity of individuality prob
 eq_ind_prob <-  data.frame(group=rownames(phys_students_prob),
              demo = phys_students_prob$demo,
              Race = phys_students_prob$Race,
-             instruction = ifelse(phys_students_prob$instruction=="LA",1,0),
-             firstgen = phys_students_prob$firstgen,
+             Instruction = ifelse(phys_students_prob$Instruction=="LA",1,0),
+             FG_Status = phys_students_prob$FG_Status,
              q= phys_students_prob$q,
              seU= phys_students_prob$seU,
              seL= phys_students_prob$seL)
-eq_ind_prob <- eq_ind_prob %>% group_by(demo,firstgen) %>% mutate(qdiff = q - q[[1]])
-eq_ind_prob <- eq_ind_prob %>% group_by(demo,firstgen) %>% mutate(seUL = ((seL[[1]])^2+(seU)^2)^0.5)
-eq_ind_prob <- eq_ind_prob %>% group_by(demo,firstgen) %>% mutate(seLL = ((seU[[1]])^2+(seL)^2)^0.5)
+eq_ind_prob <- eq_ind_prob %>% group_by(demo,FG_Status) %>% mutate(qdiff = q - q[[1]])
+eq_ind_prob <- eq_ind_prob %>% group_by(demo,FG_Status) %>% mutate(seUL = ((seL[[1]])^2+(seU)^2)^0.5)
+eq_ind_prob <- eq_ind_prob %>% group_by(demo,FG_Status) %>% mutate(seLL = ((seU[[1]])^2+(seL)^2)^0.5)
 eq_ind_prob$UL <- eq_ind_prob$qdiff + 1.96*eq_ind_prob$seUL
 eq_ind_prob$LL <- eq_ind_prob$qdiff - 1.96*eq_ind_prob$seLL
 
@@ -396,7 +417,7 @@ p3est <- get.est %>% group_by(group) %>%
                             SE = sqrt(T)) 
 p3est$race <- word(p3est$group, 1)
 p3est$gender <- word(p3est$group, 2)
-p3est$instruction <- word(p3est$group, 3)
+p3est$Instruction <- word(p3est$group, 3)
 p3est$race_gender <- paste(p3est$race,p3est$gender, sep= " ")
 
 return <- p3est}
@@ -423,7 +444,7 @@ intro_est <- get.est %>%
                             cvwm = mean(cov.White.Male.Lecture)) 
 p3est$race <- word(p3est$group, 1)
 p3est$gender <- word(p3est$group, 2)
-p3est$instruction <- word(p3est$group, 3)
+p3est$Instruction <- word(p3est$group, 3)
 p3est$race_gender <- paste(p3est$race,p3est$gender, sep= " ")
 return <- p3est}
 
@@ -445,7 +466,7 @@ Course plot
 ```{r}
 phys_courses_prob$math <- factor(phys_courses_prob$math,levels = c("Overall", "Algebra-based", "Calculus-based"))
 
-courseplot2 <- ggplot(phys_courses_prob, aes(x=semester, y=q, fill=instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
+courseplot2 <- ggplot(phys_courses_prob, aes(x=semester, y=q, fill=Instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
   theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) +
   ylab("DFW probability") + xlab("Semester") + facet_grid(.~math, scales = "free", space = "free")
 
@@ -455,14 +476,13 @@ ggsave("courses.png", plot= last_plot(), dpi=300, width = 6, height = 4, units =
 
 Student plot
 ```{r}
-phys_students_prob$firstgen <- factor(phys_students_prob$firstgen,levels = c("Non-FG", "FG"))
+phys_students_prob2$FG_Status <- factor(phys_students_prob2$FG_Status,levels = c("Overall", "Non-FG", "FG"))
 
-studentplot <- ggplot(phys_students_prob, aes(x=demo, y=q, fill=instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
-  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("DFW probability") + facet_grid(.~firstgen, scales = "free", space = "free")
+studentplot <- ggplot(phys_students_prob2, aes(x=demo, y=q, fill=Instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("DFW probability") + facet_grid(.~FG_Status, scales = "free", space = "free")
 
 plot(studentplot)
-ggsave("students.png", plot= last_plot(), dpi=300, width = 7, height = 6, units = "in", device = "png")
-
+ggsave("students.png", plot= last_plot(), dpi=300, width = 12, height = 6, units = "in", device = "png")
 ```
 
 Equality of outcome plot
@@ -471,8 +491,8 @@ eq_out_prob$demo_fg <- factor(c("White Men", "White Men", "White Women", "White 
 
 eq_out_prob <- eq_out_prob[-c(1,2),]
 
-eq_out_plot <- ggplot(eq_out_prob, aes(x=reorder(demo_fg, new.order=c(" Men of Color", " White Men", "Men of Color", " Women of Color", " White Women", "Women of Color", "White Women")), y=q, fill=firstgen)) + geom_bar(stat = "identity", position= "dodge") + coord_flip()+
-  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + facet_grid(.~instruction, scales = "free", space = "free") + xlab("") + scale_y_continuous(breaks=c(-0.1,-.05,0,0.05,.1,.15), limits=c(-0.1,0.2))
+eq_out_plot <- ggplot(eq_out_prob, aes(x=reorder(demo_fg, new.order=c(" Men of Color", " White Men", "Men of Color", " Women of Color", " White Women", "Women of Color", "White Women")), y=q, fill=FG_Status)) + geom_bar(stat = "identity", position= "dodge") + coord_flip()+
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + facet_grid(.~Instruction, scales = "free", space = "free") + xlab("") + scale_y_continuous(breaks=c(-0.1,-.05,0,0.05,.1,.15), limits=c(-0.1,0.2))
 
 plot(eq_out_plot)
 ggsave("eq_out_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, units = "in", device = "png")
@@ -481,7 +501,7 @@ ggsave("eq_out_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, uni
 
 equity of individuality plot
 ```{r}
-eq_ind_plot <- ggplot(eq_ind_prob, aes(x=reorder(demo, new.order=c("White Men","White Women", "Men of Color", "Women of Color")), y=qdiff, fill=firstgen)) + geom_bar(stat = "identity", position= "dodge") + 
+eq_ind_plot <- ggplot(eq_ind_prob, aes(x=reorder(demo, new.order=c("White Men","White Women", "Men of Color", "Women of Color")), y=qdiff, fill=FG_Status)) + geom_bar(stat = "identity", position= "dodge") + 
   theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("DFW probability")
 
 plot(eq_ind_plot)
@@ -493,10 +513,10 @@ ggsave("eq_ind_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, uni
 ```{r}
 desc_gen <- freq(red_phys$gender)
 desc_race <- freq(red_phys$race)
-desc_firstgen <- freq(red_phys$firstgen)
+desc_FG_Status <- freq(red_phys$FG_Status)
 desc_gen
 desc_race
-desc_firstgen
+desc_FG_Status
 
 desc <- red_phys %>% group_by(Number) %>% summarise(N = length(DDFW),
              sections = length(unique(courID)),
@@ -509,8 +529,8 @@ desc <- red_phys %>% group_by(Number) %>% summarise(N = length(DDFW),
              White_N = sum(race_White),
              nonwhite_mean = mean(nonwhite),
              nonwhite_N = sum(nonwhite),
-             firstgen_mean = mean(firstgen),
-             firstgen_N = sum(firstgen),
+             FG_Status_mean = mean(FG_Status),
+             FG_Status_N = sum(FG_Status),
              Male_mean = mean(gender_Male),
              Male_N = sum(gender_Male),
              female_mean = mean(gender_Female),
@@ -527,8 +547,8 @@ total <- red_phys %>% summarise(N = length(DDFW),
              White_N = sum(race_White),
              nonwhite_mean = mean(nonwhite),
              nonwhite_N = sum(nonwhite),
-             firstgen_mean = mean(firstgen),
-             firstgen_N = sum(firstgen),
+             FG_Status_mean = mean(FG_Status),
+             FG_Status_N = sum(FG_Status),
              Male_mean = mean(gender_Male),
              Male_N = sum(gender_Male),
              female_mean = mean(gender_Female),
@@ -549,8 +569,8 @@ desc_intro <-red_introPhys %>% summarise(N = length(DDFW),
              White_N = sum(race_White),
              nonwhite_mean = mean(nonwhite),
              nonwhite_N = sum(nonwhite),
-             firstgen_mean = mean(firstgen),
-             firstgen_N = sum(firstgen),
+             FG_Status_mean = mean(FG_Status),
+             FG_Status_N = sum(FG_Status),
              Male_mean = mean(gender_Male),
              Male_N = sum(gender_Male),
              female_mean = mean(gender_Female),
@@ -569,8 +589,8 @@ desc_withincourse <- red_phys %>% group_by(courID) %>% summarise(N = length(DDFW
              White_N = sum(race_White),
              nonwhite_mean = mean(nonwhite),
              nonwhite_N = sum(nonwhite),
-             firstgen_mean = mean(firstgen),
-             firstgen_N = sum(firstgen),
+             FG_Status_mean = mean(FG_Status),
+             FG_Status_N = sum(FG_Status),
              Male_mean = mean(gender_Male),
              Male_N = sum(gender_Male),
              female_mean = mean(gender_Female),
