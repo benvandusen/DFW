@@ -221,6 +221,21 @@ summary(intro_m_final)
 ICC <- 0.3102/(0.3102+pi^2/3)
 ```
 
+running best model - intro phys (disaggregated)
+```{r}
+intro_mod_uncond <- (DDFW ~ + (1|courID))
+intro_m_uncond <- glmer(intro_mod_uncond, data=red_introPhys,family = binomial)
+
+intro_mod_overall <- (DDFW ~ LA + (1|courID))
+intro_m_overall <- glmer(intro_mod_overall, data=red_introPhys,family = binomial)
+
+intro_mod_disag_final <- (DDFW ~ Number_202A*(FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite) + (1|courID))
+intro_m_disag_final <- glmer(intro_mod_disag_final, data=red_introPhys,family = binomial)
+summary(intro_m_disag_final)
+summary(intro_m_final)
+ICC <- 0.3102/(0.3102+pi^2/3)
+```
+
 running best model - across physics courses
 ```{r}
 phys_mod_final <- (DDFW ~ Number_204B*LA + Number_204C*LA + Number_202A*LA + Number_202B*LA + (1|courID))
