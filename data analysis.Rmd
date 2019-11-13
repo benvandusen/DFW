@@ -24,11 +24,13 @@ library("dummies")
 library(foreach)
 library(ggplot2)
 library(multcomp)
-library("dplyr")
+
 library(lattice)
 library(hglm)
 library(gmodels)
 library(frequency)
+
+library("dplyr")
 plot_col <- c('#66c2a5', '#fc8d62', '#8da0cb')
 #cbbpalette <- c('#000000','#E69F00','#56B4E9')
 cbbpalette <- c( "#009E73", "#e79f00", "#9ad0f3", "#0072B2", "#D55E00", 
@@ -532,6 +534,20 @@ ggsave("eq_ind_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, uni
 ```
 
 #Descriptive statistics
+Jayson's code to do the descriptives
+```{r}
+for_descriptives_df <- red_introPhys[c("DDFW","FG_Status","Female","algebra","nonwhite","LA")]
+descriptives_algebra <- for_descriptives_df %>% group_by(FG_Status, Female, algebra, nonwhite, LA) %>%
+  summarise(N = length(DDFW),
+            DDFW= sum(DDFW))
+descriptives_all <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA) %>%
+  summarise(N = length(DDFW),
+            DDFW= sum(DDFW))
+
+write.csv(descriptives_all, file="descriptives_table.csv")
+```
+
+
 ```{r}
 desc_gen <- freq(red_phys$gender)
 desc_race <- freq(red_phys$race)
