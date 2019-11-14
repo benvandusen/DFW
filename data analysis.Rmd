@@ -536,7 +536,7 @@ ggsave("eq_ind_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, uni
 #Descriptive statistics
 Jayson's code to do the descriptives
 ```{r}
-for_descriptives_df <- red_introPhys[c("DDFW","FG_Status","Female","algebra","nonwhite","LA")]
+for_descriptives_df <- red_introPhys[c("DDFW","FG_Status","Female","algebra","nonwhite","LA","race_Non-Resident Alien")]
 descriptives_algebra <- for_descriptives_df %>% group_by(FG_Status, Female, algebra, nonwhite, LA) %>%
   summarise(N = length(DDFW),
             DDFW= sum(DDFW))
@@ -544,7 +544,18 @@ descriptives_all <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite
   summarise(N = length(DDFW),
             DDFW= sum(DDFW))
 
-write.csv(descriptives_all, file="descriptives_table.csv")
+descriptives_all_NRA <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA,`race_Non-Resident Alien`) %>%
+  summarise(N = length(DDFW),
+            DDFW= sum(DDFW))
+
+red_introPhys$race_Asian
+#write.csv(descriptives_all, file="descriptives_table.csv")
+write.csv(descriptives_all_NRA, file="descriptives_table_NRA.csv")
+
+temp <- MIdata[[1]]
+mytable <- xtabs(~`race_Non-Resident Alien`+ `race_American Indian/Alaskan Native` + race_Asian, data=red_introPhys)
+ftable(mytable)
+
 ```
 
 
