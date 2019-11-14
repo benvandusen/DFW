@@ -668,7 +668,9 @@ boxplot(red_202_204$Model.F.Res ~ red_202_204$courID)
 #Assumption of Normality or residuals: want points to be near the line
 qqmath(phys_m_final)
 
-plot.hglm(phys_m_final)
+#library(hglm)
+#library(hglm.data)
+#plot.hglm(phys_m_final)
 
 #variables are not correlated to the residuals: want a p-value>0.05
 cor.test(resid(phys_m_final), MIdata[[1]]$pre_scor) 
