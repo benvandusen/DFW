@@ -1,0 +1,288 @@
+---
+title: "Untitled"
+author: "Jayson Nissen"
+date: "11/13/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+logit2prob <- function(logit){
+  odds <- exp(logit)
+  prob <- odds / (1 + odds)
+  return(prob)
+}
+
+model_probs <- function(courses){
+probcourses <- summary(courses)
+
+temp <- data.frame(group=rownames(probcourses$linfct),
+             q = probcourses$test$coefficients, 
+             se = (probcourses$test$sigma))
+
+temp$UL <- temp$q+temp$se
+temp$LL <- temp$q-temp$se
+temp2 <- logit2prob(temp[c(2,4,5)])
+return <- temp2
+}
+```
+
+
+Function for doing all of the analyses
+```{r}
+student_change_fun <- function(df_for_analysis){
+intro_mod_final <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + (1|name)) # note name here. This is particular to the code below.
+intro_m_final <- glmer(intro_mod_final, data=df_for_analysis,family = binomial)
+#summary(intro_m_final)
+
+#Students
+#(Int, fg,LA,fem,nwhi, fg:LA,fem:LA,nwhi:LA, fg:nwhi)
+WMR =   c(1, 0,0,0,0, 0,0,0, 0) #White, male, returning, no LA
+WMRL =  c(1, 0,1,0,0, 0,0,0, 0) #White, male, returning, LA
+BMR =   c(1, 0,0,0,1, 0,0,0, 0) 
+BMRL =  c(1, 0,1,0,1, 0,0,1, 0)
+WFR =   c(1, 0,0,1,0, 0,0,0, 0) 
+WFRL =  c(1, 0,1,1,0, 0,1,0, 0)
+WMF =   c(1, 1,0,0,0, 0,0,0, 0) 
+WMFL =  c(1, 1,1,0,0, 1,0,0, 0)
+WFF =   c(1, 1,0,1,0, 0,0,0, 0) 
+WFFL =  c(1, 1,1,1,0, 1,1,0, 0)
+BFR =   c(1, 0,0,1,1, 0,0,0, 0) 
+BFRL =  c(1, 0,1,1,1, 0,1,1, 0)
+BMF =   c(1, 1,0,0,1, 0,0,0, 1) 
+BMFL =  c(1, 1,1,0,1, 1,0,1, 1)
+BWF =   c(1, 1,0,1,1, 0,0,0, 1) 
+BWFL =  c(1, 1,1,1,1, 1,1,1, 1)
+
+
+contrast_forms_students <- rbind ('White male'=WMR,
+                                'White male with LA'=WMRL,
+                                'White female'=WFR,
+                                'White female LA'=WFRL,                                
+                                'Non-White male'=BMR,
+                                'Non-White male LA'=BMRL,
+                                'Non-White female'=BFR,
+                                'Non-White female LA'=BFRL,
+                                'White male first-gen'=WMF,
+                                'White male first-gen LA'=WMFL,
+                                'White female first-gen'=WFF,
+                                'White female first-gen LA'=WFFL,
+                                'Non-White male first-gen'=BMF,
+                                'Non-White male first-gen LA'=BMFL,
+                                'Non-White female first-gen'=BWF,
+                                'Non-White female first-gen LA'=BWFL)
+
+students <- glht(intro_m_final, contrast_forms_students)
+
+
+phys_students_prob <- model_probs(students)
+phys_students_prob$seU <- phys_students_prob$UL-phys_students_prob$q
+phys_students_prob$seL <- phys_students_prob$LL-phys_students_prob$q
+phys_students_prob$demo <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color"))
+phys_students_prob$demo_fg <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "First Gen. White Men", "First Gen. White Men", "First Gen. White Women", "First Gen. White Women", "First Gen. Men of Color", "First Gen. Men of Color", "First Gen. Women of Color", "First Gen. Women of Color"))
+phys_students_prob$Race <- factor(c("White", "White", "White", "White", "POC", "POC", "POC", "POC", "White", "White", "White", "White", "POC", "POC", "POC", "POC"))
+phys_students_prob$Instruction <- factor(c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
+phys_students_prob$FG_Status <- factor(c("Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG"))
+
+eq_ind_prob <-  data.frame(group=rownames(phys_students_prob),
+             demo = phys_students_prob$demo,
+             Race = phys_students_prob$Race,
+             Instruction = ifelse(phys_students_prob$Instruction=="LA",1,0),
+             FG_Status = phys_students_prob$FG_Status,
+             q= phys_students_prob$q,
+             seU= phys_students_prob$seU,
+             seL= phys_students_prob$seL)
+eq_ind_prob <- eq_ind_prob %>% group_by(demo,FG_Status) %>% mutate(qdiff = q - q[[1]])
+eq_ind_prob <- eq_ind_prob %>% group_by(demo,FG_Status) %>% mutate(seUL = ((seL[[1]])^2+(seU)^2)^0.5)
+eq_ind_prob <- eq_ind_prob %>% group_by(demo,FG_Status) %>% mutate(seLL = ((seU[[1]])^2+(seL)^2)^0.5)
+eq_ind_prob$UL <- eq_ind_prob$qdiff + 1.96*eq_ind_prob$seUL
+eq_ind_prob$LL <- eq_ind_prob$qdiff - 1.96*eq_ind_prob$seLL
+
+eq_ind_prob <- eq_ind_prob[which(1:nrow(eq_ind_prob) %% 2 == 0) , ]
+
+return <- eq_ind_prob 
+}
+
+```
+
+```{r}
+load("reduced_df.Rdata")
+```
+
+intro_m_disag_final
+This is the final model that I want to focus on.
+
+bootstrapping code
+
+```{r}
+## Making the random draw of courses
+set.seed(1101)
+
+booted_df <- list()
+K = 50
+foreach(j=1:K, .combine=rbind) %dopar% {
+random_courses <- sample (unique(red_introPhys$courID), size = length(unique(red_introPhys$courID)), replace =T)
+
+ random_df <- foreach(i=1:41, .combine=rbind) %do% {
+  course <- subset(red_introPhys, courID == random_courses[[i]])
+  course$name <- i
+  return <- course
+ }
+ 
+ booted_df[[j]] <- student_change_fun(random_df)
+ 
+}
+
+#View(booted_df[[1]])
+```
+
+```{r}
+booted_prob_dif <- booted_df[[1]][c(1:3,5)]
+
+
+
+temp <- foreach(i=1:K, .combine=cbind) %do% {
+temp <- booted_df[[i]]
+return <- temp$qdiff
+}
+
+temp <- as.data.frame(temp)
+booted_prob_dif <- cbind.data.frame(booted_prob_dif, as.data.frame(temp))
+
+
+library(tidyr)
+booted_prob_dif <- booted_prob_dif %>%
+          gather( key = iteration,
+                  value = values,
+                  c(1:K+4))
+```
+
+booted_logits <- data_frame(demo = c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color"),
+                            demo_fg = c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "First Gen. White Men", "First Gen. White Men", "First Gen. White Women", "First Gen. White Women", "First Gen. Men of Color", "First Gen. Men of Color", "First Gen. Women of Color", "First Gen. Women of Color"),
+                            race = c("White", "White", "White", "White", "POC", "POC", "POC", "POC", "White", "White", "White", "White", "POC", "POC", "POC", "POC"),
+                            instruction = c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"),
+                            fg_status = c("Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG"))
+
+```{r}
+ggplot(booted_prob_dif, aes(x=values)) + geom_histogram() + facet_wrap(booted_prob_dif$group)
+
+ggsave("eq_ind_plot_bootstrap_distributions.png", plot= last_plot(), dpi=300, width = 7, height = 6, units = "in", device = "png")
+```
+
+```{r}
+boot_combined <- booted_prob_dif%>%
+                  group_by(group) %>%
+                    summarise(demo = unique(demo),
+                              fg_status = unique(FG_Status),
+                              mean = mean(values),
+                              se = sd(values) )
+
+boot_combined$ll <- boot_combined$mean - boot_combined$se
+boot_combined$ul <- boot_combined$mean + boot_combined$se
+```
+
+```{r}
+eq_ind_plot <- ggplot(boot_combined, aes(x=reorder(demo, new.order=c("Men of Color", "Women of Color", "White Men","White Women")), y=mean, fill=fg_status)) + geom_bar(stat = "identity", position= "dodge") + 
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("Change in predicted DFW probability") +
+  geom_errorbar(aes(ymin=mean-1.96*se, ymax=mean+1.96*se),, position="dodge")
+
+plot(eq_ind_plot)
+
+ggsave("eq_ind_plot_bootstrapped.png", plot= last_plot(), dpi=300, width = 7, height = 6, units = "in", device = "png")
+```
+
+
+```{r}
+load("reduced_df.Rdata")
+```
+
+The code for doing it once with the full data set for comparison.
+
+
+```{r}
+intro_mod_final <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + (1|courID)) # note name here. This is particular to the code below.
+intro_m_final <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
+#summary(intro_m_final)
+
+#Students
+#(Int, fg,LA,fem,nwhi, fg:LA,fem:LA,nwhi:LA, fg:nwhi)
+WMR =   c(1, 0,0,0,0, 0,0,0, 0) #White, male, returning, no LA
+WMRL =  c(1, 0,1,0,0, 0,0,0, 0) #White, male, returning, LA
+BMR =   c(1, 0,0,0,1, 0,0,0, 0) 
+BMRL =  c(1, 0,1,0,1, 0,0,1, 0)
+WFR =   c(1, 0,0,1,0, 0,0,0, 0) 
+WFRL =  c(1, 0,1,1,0, 0,1,0, 0)
+WMF =   c(1, 1,0,0,0, 0,0,0, 0) 
+WMFL =  c(1, 1,1,0,0, 1,0,0, 0)
+WFF =   c(1, 1,0,1,0, 0,0,0, 0) 
+WFFL =  c(1, 1,1,1,0, 1,1,0, 0)
+BFR =   c(1, 0,0,1,1, 0,0,0, 0) 
+BFRL =  c(1, 0,1,1,1, 0,1,1, 0)
+BMF =   c(1, 1,0,0,1, 0,0,0, 1) 
+BMFL =  c(1, 1,1,0,1, 1,0,1, 1)
+BWF =   c(1, 1,0,1,1, 0,0,0, 1) 
+BWFL =  c(1, 1,1,1,1, 1,1,1, 1)
+
+
+contrast_forms_students <- rbind ('White male'=WMR,
+                                'White male with LA'=WMRL,
+                                'White female'=WFR,
+                                'White female LA'=WFRL,                                
+                                'Non-White male'=BMR,
+                                'Non-White male LA'=BMRL,
+                                'Non-White female'=BFR,
+                                'Non-White female LA'=BFRL,
+                                'White male first-gen'=WMF,
+                                'White male first-gen LA'=WMFL,
+                                'White female first-gen'=WFF,
+                                'White female first-gen LA'=WFFL,
+                                'Non-White male first-gen'=BMF,
+                                'Non-White male first-gen LA'=BMFL,
+                                'Non-White female first-gen'=BWF,
+                                'Non-White female first-gen LA'=BWFL)
+
+students <- glht(intro_m_final, contrast_forms_students)
+
+
+phys_students_prob <- model_probs(students)
+phys_students_prob$seU <- phys_students_prob$UL-phys_students_prob$q
+phys_students_prob$seL <- phys_students_prob$LL-phys_students_prob$q
+phys_students_prob$demo <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color"))
+phys_students_prob$demo_fg <- factor(c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "First Gen. White Men", "First Gen. White Men", "First Gen. White Women", "First Gen. White Women", "First Gen. Men of Color", "First Gen. Men of Color", "First Gen. Women of Color", "First Gen. Women of Color"))
+phys_students_prob$Race <- factor(c("White", "White", "White", "White", "POC", "POC", "POC", "POC", "White", "White", "White", "White", "POC", "POC", "POC", "POC"))
+phys_students_prob$Instruction <- factor(c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"))
+phys_students_prob$FG_Status <- factor(c("Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG"))
+
+eq_ind_prob <-  data.frame(group=rownames(phys_students_prob),
+             demo = phys_students_prob$demo,
+             Race = phys_students_prob$Race,
+             Instruction = ifelse(phys_students_prob$Instruction=="LA",1,0),
+             FG_Status = phys_students_prob$FG_Status,
+             q= phys_students_prob$q,
+             seU= phys_students_prob$seU,
+             seL= phys_students_prob$seL)
+eq_ind_prob <- eq_ind_prob %>% group_by(demo,FG_Status) %>% mutate(qdiff = q - q[[1]])
+eq_ind_prob <- eq_ind_prob %>% group_by(demo,FG_Status) %>% mutate(seUL = ((seL[[1]])^2+(seU)^2)^0.5)
+eq_ind_prob <- eq_ind_prob %>% group_by(demo,FG_Status) %>% mutate(seLL = ((seU[[1]])^2+(seL)^2)^0.5)
+eq_ind_prob$UL <- eq_ind_prob$qdiff + 1.96*eq_ind_prob$seUL
+eq_ind_prob$LL <- eq_ind_prob$qdiff - 1.96*eq_ind_prob$seLL
+
+eq_ind_prob <- eq_ind_prob[which(1:nrow(eq_ind_prob) %% 2 == 0) , ]
+
+eq_ind_plot <- ggplot(eq_ind_prob, aes(x=reorder(demo, new.order=c("Men of Color", "Women of Color", "White Men","White Women")), y=qdiff, fill=FG_Status)) + geom_bar(stat = "identity", position= "dodge") + 
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("Change in predicted DFW probability")
+
+plot(eq_ind_plot)
+## ggsave("eq_ind_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, units = "in", device = "png")
+
+```
+
