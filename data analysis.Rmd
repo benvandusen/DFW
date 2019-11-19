@@ -24,11 +24,13 @@ library("dummies")
 library(foreach)
 library(ggplot2)
 library(multcomp)
-library("dplyr")
+
 library(lattice)
 library(hglm)
 library(gmodels)
 library(frequency)
+
+library("dplyr")
 plot_col <- c('#66c2a5', '#fc8d62', '#8da0cb')
 #cbbpalette <- c('#000000','#E69F00','#56B4E9')
 cbbpalette <- c( "#009E73", "#e79f00", "#9ad0f3", "#0072B2", "#D55E00", 
@@ -220,8 +222,10 @@ summary(intro_m_overall)
 summary(intro_m_final)
 ICC <- 0.3102/(0.3102+pi^2/3)
 ```
+Intro_m_final is our final model in line 218
 
 running best model - intro phys (disaggregated)
+These are not the final models
 ```{r}
 intro_mod_uncond <- (DDFW ~ + (1|courID))
 intro_m_uncond <- glmer(intro_mod_uncond, data=red_introPhys,family = binomial)
@@ -532,6 +536,47 @@ ggsave("eq_ind_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, uni
 ```
 
 #Descriptive statistics
+Jayson's code to do the descriptives
+```{r}
+for_descriptives_df <- red_introPhys[c("DDFW","FG_Status","Female","algebra","nonwhite","LA","race_Non-Resident Alien","race_Unknown")]
+descriptives_algebra <- for_descriptives_df %>% group_by(FG_Status, Female, algebra, nonwhite, LA) %>%
+  summarise(N = length(DDFW),
+            DDFW= sum(DDFW))
+descriptives_all <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA) %>%
+  summarise(N = length(DDFW),
+            DDFW= sum(DDFW))
+
+descriptives_all_NRA <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA,`race_Non-Resident Alien`) %>%
+  summarise(N = length(DDFW),
+            DDFW= sum(DDFW))
+
+red_introPhys$race_Unknown
+#write.csv(descriptives_all, file="descriptives_table.csv")
+write.csv(descriptives_all_NRA, file="descriptives_table_NRA.csv")
+
+descriptives_all_NRA <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA,race_Unknown) %>%
+  summarise(N = length(DDFW),
+            DDFW= sum(DDFW))
+
+#mytable <- xtabs(~`race_Non-Resident Alien`+ `race_American Indian/Alaskan Native` + race_Asian + `race_Black/African American` + `race_Hispanic/Latino` + race_NULL + `race_Pacific Islander` + `race_Two or More Races` + race_White + race_Unknown, data=red_introPhys)
+#temp <- ftable(mytable)
+#write.csv(temp, file="race sample sizes.csv") # This did not work.
+
+sum(red_introPhys$`race_American Indian/Alaskan Native`)
+sum(red_introPhys$race_Asian)
+sum(red_introPhys$`race_Black/African American`)
+sum(red_introPhys$`race_Hispanic/Latino`)
+sum(red_introPhys$`race_Non-Resident Alien`)
+sum(red_introPhys$race_NULL)
+sum(red_introPhys$`race_Pacific Islander`)
+sum(red_introPhys$`race_Two or More Races`)
+sum(red_introPhys$race_Unknown)
+sum(red_introPhys$race_White)
+sum(red_introPhys$race)
+
+```
+
+
 ```{r}
 desc_gen <- freq(red_phys$gender)
 desc_race <- freq(red_phys$race)
@@ -652,7 +697,9 @@ boxplot(red_202_204$Model.F.Res ~ red_202_204$courID)
 #Assumption of Normality or residuals: want points to be near the line
 qqmath(phys_m_final)
 
-plot.hglm(phys_m_final)
+#library(hglm)
+#library(hglm.data)
+#plot.hglm(phys_m_final)
 
 #variables are not correlated to the residuals: want a p-value>0.05
 cor.test(resid(phys_m_final), MIdata[[1]]$pre_scor) 
