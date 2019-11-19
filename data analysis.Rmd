@@ -500,7 +500,7 @@ phys_students_prob2$FG_Status <- factor(phys_students_prob2$FG_Status,levels = c
 phys_students_prob2$demo_fg <- factor(phys_students_prob2$demo_fg,levels = c("Men of Color", "Women of Color", "White Men","White Women"))
 
 studentplot <- ggplot(phys_students_prob2, aes(x=reorder(demo, new.order=c("Overall", "Men of Color", "Women of Color", "White Men","White Women")),  y=q, fill=Instruction)) + geom_bar(stat = "identity", position= "dodge") + geom_errorbar(aes( ymax= UL, ymin=LL), position="dodge") +
-  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("Predicted DFW probability") + facet_grid(.~FG_Status, scales = "free", space = "free")
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("Predicted DFW rate") + facet_grid(.~FG_Status, scales = "free", space = "free")
 
 plot(studentplot)
 ggsave("students.png", plot= last_plot(), dpi=300, width = 12, height = 6, units = "in", device = "png")
@@ -524,7 +524,7 @@ ggsave("eq_out_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, uni
 equity of individuality plot
 ```{r}
 eq_ind_plot <- ggplot(eq_ind_prob, aes(x=reorder(demo, new.order=c("Men of Color", "Women of Color", "White Men","White Women")), y=qdiff, fill=FG_Status)) + geom_bar(stat = "identity", position= "dodge") + 
-  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("Change in predicted DFW probability")
+  theme(legend.position = "bottom", axis.title.x=element_blank(), axis.text.x=element_text(angle=90), axis.ticks.x=element_blank(),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"),text = element_text(size=16, color = "black")) + ylab("Change in predicted DFW rate")
 
 plot(eq_ind_plot)
 ggsave("eq_ind_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, units = "in", device = "png")
