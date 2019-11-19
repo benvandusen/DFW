@@ -128,7 +128,7 @@ bootstrapping code
 set.seed(1101)
 
 booted_df <- list()
-K = 50
+K = 100 0
 foreach(j=1:K, .combine=rbind) %dopar% {
 random_courses <- sample (unique(red_introPhys$courID), size = length(unique(red_introPhys$courID)), replace =T)
 
@@ -166,11 +166,6 @@ booted_prob_dif <- booted_prob_dif %>%
                   c(1:K+4))
 ```
 
-booted_logits <- data_frame(demo = c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color"),
-                            demo_fg = c("White Men", "White Men", "White Women", "White Women", "Men of Color", "Men of Color", "Women of Color", "Women of Color", "First Gen. White Men", "First Gen. White Men", "First Gen. White Women", "First Gen. White Women", "First Gen. Men of Color", "First Gen. Men of Color", "First Gen. Women of Color", "First Gen. Women of Color"),
-                            race = c("White", "White", "White", "White", "POC", "POC", "POC", "POC", "White", "White", "White", "White", "POC", "POC", "POC", "POC"),
-                            instruction = c("Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA", "Traditional", "LA"),
-                            fg_status = c("Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "Non-FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG", "FG"))
 
 ```{r}
 ggplot(booted_prob_dif, aes(x=values)) + geom_histogram() + facet_wrap(booted_prob_dif$group)
