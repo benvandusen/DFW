@@ -162,6 +162,7 @@ reduced <- cbind(reduced, dplyr::select(DFW, "Number","race","FG_Status","gender
 reduced$nonwhite <- ifelse(reduced$race=="White",0,1)
 reduced$algebra <- ifelse(reduced$Number=="202A" |DFW$Number=="202B",1,0)
 reduced$Female <- ifelse(reduced$gender=="Male",0,1)
+reduced$NULLGender <- ifelse(reduced$gender=="NULL",1,0)
 reduced$FG_Status <- ifelse(reduced$FG_Status=="First Generation Student",1,0)
 ```
 
@@ -215,11 +216,17 @@ intro_m_uncond <- glmer(intro_mod_uncond, data=red_introPhys,family = binomial)
 intro_mod_overall <- (DDFW ~ LA + (1|courID))
 intro_m_overall <- glmer(intro_mod_overall, data=red_introPhys,family = binomial)
 
-intro_mod_final <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + (1|courID))
-intro_m_final <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
+intro_mod_finalold <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + (1|courID))
+intro_m_finalold <- glmer(intro_mod_finalold, data=red_introPhys,family = binomial)
+intro_mod_final1 <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender*LA + (1|courID))
+intro_m_final1 <- glmer(intro_mod_final1, data=red_introPhys,family = binomial)
+intro_mod_final2 <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender + (1|courID))
+intro_m_final2 <- glmer(intro_mod_final2, data=red_introPhys,family = binomial)
 summary(intro_m_uncond)
 summary(intro_m_overall)
-summary(intro_m_final)
+summary(intro_m_finalold)
+summary(intro_m_final1)
+summary(intro_m_final2)
 ICC <- 0.3102/(0.3102+pi^2/3)
 ```
 Intro_m_final is our final model in line 218
