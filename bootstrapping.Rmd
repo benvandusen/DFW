@@ -40,7 +40,7 @@ return <- temp2
 Function for doing all of the analyses
 ```{r}
 student_change_fun <- function(df_for_analysis){
-intro_mod_final <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + (1|name)) # note name here. This is particular to the code below.
+intro_mod_final <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender (1|name)) # note name here. This is particular to the code below.
 intro_m_final <- glmer(intro_mod_final, data=df_for_analysis,family = binomial)
 #summary(intro_m_final)
 
@@ -128,7 +128,7 @@ bootstrapping code
 set.seed(1101)
 
 booted_df <- list()
-K = 100 0
+K = 1000
 foreach(j=1:K, .combine=rbind) %dopar% {
 random_courses <- sample (unique(red_introPhys$courID), size = length(unique(red_introPhys$courID)), replace =T)
 

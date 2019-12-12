@@ -219,14 +219,14 @@ intro_m_overall <- glmer(intro_mod_overall, data=red_introPhys,family = binomial
 intro_mod_finalold <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + (1|courID))
 intro_m_finalold <- glmer(intro_mod_finalold, data=red_introPhys,family = binomial)
 intro_mod_final1 <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender*LA + (1|courID))
-intro_m_final1 <- glmer(intro_mod_final1, data=red_introPhys,family = binomial)
-intro_mod_final2 <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender + (1|courID))
-intro_m_final2 <- glmer(intro_mod_final2, data=red_introPhys,family = binomial)
+intro_m_final1 <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
+intro_mod_final <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender + (1|courID))
+intro_m_final <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
 summary(intro_m_uncond)
 summary(intro_m_overall)
 summary(intro_m_finalold)
 summary(intro_m_final1)
-summary(intro_m_final2)
+summary(intro_m_final)
 ICC <- 0.3102/(0.3102+pi^2/3)
 ```
 Intro_m_final is our final model in line 218
