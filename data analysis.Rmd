@@ -579,7 +579,21 @@ sum(red_introPhys$`race_Two or More Races`)
 sum(red_introPhys$race_Unknown)
 sum(red_introPhys$race_White)
 sum(red_introPhys$race)
-
+sum(red_introPhys$Female=="1" & red_introPhys$Number_202A=="1")
+sum(red_introPhys$Female=="1" & red_introPhys$Number_202A=="1")/ sum(red_introPhys$Number_202A=="1")
+sum(red_introPhys$gender_Male=="1" & red_introPhys$Number_202A=="1")
+sum(red_introPhys$gender_Male=="1" & red_introPhys$Number_202A=="1")/ sum(red_introPhys$Number_202A=="1")
+sum(red_introPhys$gender_NULL=="1" & red_introPhys$Number_202A=="1")
+sum(red_introPhys$gender_NULL=="1" & red_introPhys$Number_202A=="1")/ sum(red_introPhys$Number_202A=="1")
+sum(red_introPhys$Female=="1" & red_introPhys$Number_204A=="1")
+sum(red_introPhys$Female=="1" & red_introPhys$Number_204A=="1")/ sum(red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_Male=="1" & red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_Male=="1" & red_introPhys$Number_204A=="1")/ sum(red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_NULL=="1" & red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_NULL=="1" & red_introPhys$Number_204A=="1")/ sum(red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_Male=="1")/count(red_introPhys)
+sum(red_introPhys$gender_Female=="1")/count(red_introPhys)
+sum(red_introPhys$gender_NULL=="1")/count(red_introPhys)
 ```
 
 
