@@ -196,8 +196,8 @@ Find best model (intro physics) (https://quantscience.rbind.io/2017/12/26/model-
 m_all <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender*LA + (1|courID))
 options(na.action = "na.fail")
 intro_mod_dredge <- glmer(m_all, data=red_introPhys,family = binomial)
-intro_dredge <- dredge(intro_mod_dredge)
-model.sel(intro_dredge, rank=AICc)
+#intro_dredge <- dredge(intro_mod_dredge)
+#model.sel(intro_dredge, rank=AICc)
 ```
 
 Find best model (between classes) (https://quantscience.rbind.io/2017/12/26/model-selection-for-multilevel-modeling/)
