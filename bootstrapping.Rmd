@@ -40,28 +40,28 @@ return <- temp2
 Function for doing all of the analyses
 ```{r}
 student_change_fun <- function(df_for_analysis){
-intro_mod_final <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender (1|name)) # note name here. This is particular to the code below.
+intro_mod_final <- (DDFW ~ FG_Status*LA + Female + nonwhite*LA + FG_Status*nonwhite + NULLGender + (1|name)) # note name here. This is particular to the code below.
 intro_m_final <- glmer(intro_mod_final, data=df_for_analysis,family = binomial)
 #summary(intro_m_final)
 
 #Students
-#(Int, fg,LA,fem,nwhi, fg:LA,fem:LA,nwhi:LA, fg:nwhi)
-WMR =   c(1, 0,0,0,0, 0,0,0, 0) #White, male, returning, no LA
-WMRL =  c(1, 0,1,0,0, 0,0,0, 0) #White, male, returning, LA
-BMR =   c(1, 0,0,0,1, 0,0,0, 0) 
-BMRL =  c(1, 0,1,0,1, 0,0,1, 0)
-WFR =   c(1, 0,0,1,0, 0,0,0, 0) 
-WFRL =  c(1, 0,1,1,0, 0,1,0, 0)
-WMF =   c(1, 1,0,0,0, 0,0,0, 0) 
-WMFL =  c(1, 1,1,0,0, 1,0,0, 0)
-WFF =   c(1, 1,0,1,0, 0,0,0, 0) 
-WFFL =  c(1, 1,1,1,0, 1,1,0, 0)
-BFR =   c(1, 0,0,1,1, 0,0,0, 0) 
-BFRL =  c(1, 0,1,1,1, 0,1,1, 0)
-BMF =   c(1, 1,0,0,1, 0,0,0, 1) 
-BMFL =  c(1, 1,1,0,1, 1,0,1, 1)
-BWF =   c(1, 1,0,1,1, 0,0,0, 1) 
-BWFL =  c(1, 1,1,1,1, 1,1,1, 1)
+#(Int, fg,LA,fem,nwhi,Null, fg:LA,nwhi:LA, fg:nwhi)
+WMR =   c(1, 0,0,0,0,0, 0,0, 0) #White, male, returning, no LA
+WMRL =  c(1, 0,1,0,0,0, 0,0, 0) #White, male, returning, LA
+BMR =   c(1, 0,0,0,1,0, 0,0, 0) 
+BMRL =  c(1, 0,1,0,1,0, 0,1, 0)
+WFR =   c(1, 0,0,1,0,0, 0,0, 0) 
+WFRL =  c(1, 0,1,1,0,0, 1,0, 0)
+WMF =   c(1, 1,0,0,0,0, 0,0, 0) 
+WMFL =  c(1, 1,1,0,0,0, 1,0, 0)
+WFF =   c(1, 1,0,1,0,0, 0,0, 0) 
+WFFL =  c(1, 1,1,1,0,0, 1,0, 0)
+BFR =   c(1, 0,0,1,1,0, 0,0, 0) 
+BFRL =  c(1, 0,1,1,1,0, 0,1, 0)
+BMF =   c(1, 1,0,0,1,0, 0,0, 1) 
+BMFL =  c(1, 1,1,0,1,0, 1,1, 1)
+BWF =   c(1, 1,0,1,1,0, 0,0, 1) 
+BWFL =  c(1, 1,1,1,1,0, 1,1, 1)
 
 
 contrast_forms_students <- rbind ('White male'=WMR,
@@ -211,23 +211,23 @@ intro_m_final <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
 #summary(intro_m_final)
 
 #Students
-#(Int, fg,LA,fem,nwhi, fg:LA,fem:LA,nwhi:LA, fg:nwhi)
-WMR =   c(1, 0,0,0,0, 0,0,0, 0) #White, male, returning, no LA
-WMRL =  c(1, 0,1,0,0, 0,0,0, 0) #White, male, returning, LA
-BMR =   c(1, 0,0,0,1, 0,0,0, 0) 
-BMRL =  c(1, 0,1,0,1, 0,0,1, 0)
-WFR =   c(1, 0,0,1,0, 0,0,0, 0) 
-WFRL =  c(1, 0,1,1,0, 0,1,0, 0)
-WMF =   c(1, 1,0,0,0, 0,0,0, 0) 
-WMFL =  c(1, 1,1,0,0, 1,0,0, 0)
-WFF =   c(1, 1,0,1,0, 0,0,0, 0) 
-WFFL =  c(1, 1,1,1,0, 1,1,0, 0)
-BFR =   c(1, 0,0,1,1, 0,0,0, 0) 
-BFRL =  c(1, 0,1,1,1, 0,1,1, 0)
-BMF =   c(1, 1,0,0,1, 0,0,0, 1) 
-BMFL =  c(1, 1,1,0,1, 1,0,1, 1)
-BWF =   c(1, 1,0,1,1, 0,0,0, 1) 
-BWFL =  c(1, 1,1,1,1, 1,1,1, 1)
+#(Int, fg,LA,fem,nwhi,Null, fg:LA,nwhi:LA, fg:nwhi)
+WMR =   c(1, 0,0,0,0,0, 0,0, 0) #White, male, returning, no LA
+WMRL =  c(1, 0,1,0,0,0, 0,0, 0) #White, male, returning, LA
+BMR =   c(1, 0,0,0,1,0, 0,0, 0) 
+BMRL =  c(1, 0,1,0,1,0, 0,1, 0)
+WFR =   c(1, 0,0,1,0,0, 0,0, 0) 
+WFRL =  c(1, 0,1,1,0,0, 1,0, 0)
+WMF =   c(1, 1,0,0,0,0, 0,0, 0) 
+WMFL =  c(1, 1,1,0,0,0, 1,0, 0)
+WFF =   c(1, 1,0,1,0,0, 0,0, 0) 
+WFFL =  c(1, 1,1,1,0,0, 1,0, 0)
+BFR =   c(1, 0,0,1,1,0, 0,0, 0) 
+BFRL =  c(1, 0,1,1,1,0, 0,1, 0)
+BMF =   c(1, 1,0,0,1,0, 0,0, 1) 
+BMFL =  c(1, 1,1,0,1,0, 1,1, 1)
+BWF =   c(1, 1,0,1,1,0, 0,0, 1) 
+BWFL =  c(1, 1,1,1,1,0, 1,1, 1)
 
 
 contrast_forms_students <- rbind ('White male'=WMR,

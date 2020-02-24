@@ -161,7 +161,7 @@ reduced <- cbind(reduced, dplyr::select(DFW, "Number","race","FG_Status","gender
 
 reduced$nonwhite <- ifelse(reduced$race=="White",0,1)
 reduced$algebra <- ifelse(reduced$Number=="202A" |DFW$Number=="202B",1,0)
-reduced$Female <- ifelse(reduced$gender=="Male",0,1)
+reduced$Female <- ifelse(reduced$gender=="Female",1,0)
 reduced$NULLGender <- ifelse(reduced$gender=="NULL",1,0)
 reduced$FG_Status <- ifelse(reduced$FG_Status=="First Generation Student",1,0)
 ```
@@ -217,16 +217,14 @@ intro_m_uncond <- glmer(intro_mod_uncond, data=red_introPhys,family = binomial)
 intro_mod_overall <- (DDFW ~ LA + (1|courID))
 intro_m_overall <- glmer(intro_mod_overall, data=red_introPhys,family = binomial)
 
-intro_mod_finalold <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + (1|courID))
-intro_m_finalold <- glmer(intro_mod_finalold, data=red_introPhys,family = binomial)
-intro_mod_final1 <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender*LA + (1|courID))
-intro_m_final1 <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
-intro_mod_final <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + NULLGender + (1|courID))
+#intro_mod_finalold <- (DDFW ~ FG_Status*LA + Female*LA + nonwhite*LA + FG_Status*nonwhite + (1|courID))
+#intro_m_finalold <- glmer(intro_mod_finalold, data=red_introPhys,family = binomial)
+intro_mod_final <- (DDFW ~ FG_Status*LA + Female + nonwhite*LA + FG_Status*nonwhite + NULLGender + (1|courID))
 intro_m_final <- glmer(intro_mod_final, data=red_introPhys,family = binomial)
 summary(intro_m_uncond)
 summary(intro_m_overall)
-summary(intro_m_finalold)
-summary(intro_m_final1)
+#summary(intro_m_finalold)
+#summary(intro_m_final1)
 summary(intro_m_final)
 ICC <- 0.3102/(0.3102+pi^2/3)
 ```
@@ -303,23 +301,23 @@ contrast_forms_overall <- rbind ('Traditional'=trad,
 overall <- glht(intro_m_overall, contrast_forms_overall)
 
 #Students
-#(Int, fg,LA,fem,nwhi, fg:LA,fem:LA,nwhi:LA, fg:nwhi)
-WMR =   c(1, 0,0,0,0, 0,0,0, 0) #White, male, returning, no LA
-WMRL =  c(1, 0,1,0,0, 0,0,0, 0) #White, male, returning, LA
-BMR =   c(1, 0,0,0,1, 0,0,0, 0) 
-BMRL =  c(1, 0,1,0,1, 0,0,1, 0)
-WFR =   c(1, 0,0,1,0, 0,0,0, 0) 
-WFRL =  c(1, 0,1,1,0, 0,1,0, 0)
-WMF =   c(1, 1,0,0,0, 0,0,0, 0) 
-WMFL =  c(1, 1,1,0,0, 1,0,0, 0)
-WFF =   c(1, 1,0,1,0, 0,0,0, 0) 
-WFFL =  c(1, 1,1,1,0, 1,1,0, 0)
-BFR =   c(1, 0,0,1,1, 0,0,0, 0) 
-BFRL =  c(1, 0,1,1,1, 0,1,1, 0)
-BMF =   c(1, 1,0,0,1, 0,0,0, 1) 
-BMFL =  c(1, 1,1,0,1, 1,0,1, 1)
-BWF =   c(1, 1,0,1,1, 0,0,0, 1) 
-BWFL =  c(1, 1,1,1,1, 1,1,1, 1)
+#(Int, fg,LA,fem,nwhi,Null, fg:LA,nwhi:LA, fg:nwhi)
+WMR =   c(1, 0,0,0,0,0, 0,0, 0) #White, male, returning, no LA
+WMRL =  c(1, 0,1,0,0,0, 0,0, 0) #White, male, returning, LA
+BMR =   c(1, 0,0,0,1,0, 0,0, 0) 
+BMRL =  c(1, 0,1,0,1,0, 0,1, 0)
+WFR =   c(1, 0,0,1,0,0, 0,0, 0) 
+WFRL =  c(1, 0,1,1,0,0, 1,0, 0)
+WMF =   c(1, 1,0,0,0,0, 0,0, 0) 
+WMFL =  c(1, 1,1,0,0,0, 1,0, 0)
+WFF =   c(1, 1,0,1,0,0, 0,0, 0) 
+WFFL =  c(1, 1,1,1,0,0, 1,0, 0)
+BFR =   c(1, 0,0,1,1,0, 0,0, 0) 
+BFRL =  c(1, 0,1,1,1,0, 0,1, 0)
+BMF =   c(1, 1,0,0,1,0, 0,0, 1) 
+BMFL =  c(1, 1,1,0,1,0, 1,1, 1)
+BWF =   c(1, 1,0,1,1,0, 0,0, 1) 
+BWFL =  c(1, 1,1,1,1,0, 1,1, 1)
 
 
 contrast_forms_students <- rbind ('White male'=WMR,
@@ -548,15 +546,15 @@ ggsave("eq_ind_plot.png", plot= last_plot(), dpi=300, width = 7, height = 6, uni
 #Descriptive statistics
 Jayson's code to do the descriptives
 ```{r}
-for_descriptives_df <- red_introPhys[c("DDFW","FG_Status","Female","algebra","nonwhite","LA","race_Non-Resident Alien","race_Unknown")]
-descriptives_algebra <- for_descriptives_df %>% group_by(FG_Status, Female, algebra, nonwhite, LA) %>%
+for_descriptives_df <- red_introPhys[c("DDFW","FG_Status","Female","algebra","nonwhite","LA","race_Non-Resident Alien","race_Unknown","NULLGender")]
+descriptives_algebra <- for_descriptives_df %>% group_by(FG_Status, Female, algebra, nonwhite, LA, NULLGender) %>%
   summarise(N = length(DDFW),
             DDFW= sum(DDFW))
-descriptives_all <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA) %>%
+descriptives_all <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA, NULLGender) %>%
   summarise(N = length(DDFW),
             DDFW= sum(DDFW))
 
-descriptives_all_NRA <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA,`race_Non-Resident Alien`) %>%
+descriptives_all_NRA <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA,`race_Non-Resident Alien`, NULLGender) %>%
   summarise(N = length(DDFW),
             DDFW= sum(DDFW))
 
@@ -564,7 +562,7 @@ red_introPhys$race_Unknown
 #write.csv(descriptives_all, file="descriptives_table.csv")
 write.csv(descriptives_all_NRA, file="descriptives_table_NRA.csv")
 
-descriptives_all_NRA <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA,race_Unknown) %>%
+descriptives_all_NRA <- for_descriptives_df %>% group_by(FG_Status, Female, nonwhite, LA,race_Unknown, NULLGender) %>%
   summarise(N = length(DDFW),
             DDFW= sum(DDFW))
 
@@ -583,7 +581,21 @@ sum(red_introPhys$`race_Two or More Races`)
 sum(red_introPhys$race_Unknown)
 sum(red_introPhys$race_White)
 sum(red_introPhys$race)
-
+sum(red_introPhys$Female=="1" & red_introPhys$Number_202A=="1")
+sum(red_introPhys$Female=="1" & red_introPhys$Number_202A=="1")/ sum(red_introPhys$Number_202A=="1")
+sum(red_introPhys$gender_Male=="1" & red_introPhys$Number_202A=="1")
+sum(red_introPhys$gender_Male=="1" & red_introPhys$Number_202A=="1")/ sum(red_introPhys$Number_202A=="1")
+sum(red_introPhys$gender_NULL=="1" & red_introPhys$Number_202A=="1")
+sum(red_introPhys$gender_NULL=="1" & red_introPhys$Number_202A=="1")/ sum(red_introPhys$Number_202A=="1")
+sum(red_introPhys$Female=="1" & red_introPhys$Number_204A=="1")
+sum(red_introPhys$Female=="1" & red_introPhys$Number_204A=="1")/ sum(red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_Male=="1" & red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_Male=="1" & red_introPhys$Number_204A=="1")/ sum(red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_NULL=="1" & red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_NULL=="1" & red_introPhys$Number_204A=="1")/ sum(red_introPhys$Number_204A=="1")
+sum(red_introPhys$gender_Male=="1")/count(red_introPhys)
+sum(red_introPhys$gender_Female=="1")/count(red_introPhys)
+sum(red_introPhys$gender_NULL=="1")/count(red_introPhys)
 ```
 
 
